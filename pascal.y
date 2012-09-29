@@ -294,9 +294,7 @@ func_declaration_list : func_declaration_list semicolon function_declaration
 
 formal_parameter_list : LPAREN formal_parameter_section_list RPAREN 
 	{
-	// $$->id = ?
-	// $$->res = ?
-	$$->fpsl = $2;
+	// ?
 	}
 ;
 formal_parameter_section_list : formal_parameter_section_list semicolon formal_parameter_section
