@@ -133,47 +133,70 @@
 
 program : program_heading semicolon class_list DOT
 	{
-
+	program = $$;
+	$$->ph = $1;
+	$$->cl = $3;
 	}
  ;
 
 program_heading : PROGRAM identifier
 	{
-
+	$$->id = $2;
 	}
  | PROGRAM identifier LPAREN identifier_list RPAREN
 	{
-
+	$$->id = $2;
+	$$->il = $4;
 	}
  ;
 
 identifier_list : identifier_list comma identifier
         {
+	// ?
 
+	// $$->next = $1 
+	// 	OR 
+	// $1->next = $$
+	
+	$$->id = $3;
         }
  | identifier
         {
-
+	// $$->next = NULL  OR just leave blank?
+	$$->id = $1;
         }
  ;
 
 class_list: class_list class_identification PBEGIN class_block END
 	{
+	// ?
 
+	// $$->next = $1 
+	// 	OR 
+	// $1->next = $$
+
+	$$->ci = $2;
+	$$->cb = $4;
 	}
  | class_identification PBEGIN class_block END
 	{
-
+	// $$->next = NULL  OR just leave blank?
+	$$->ci = $1;
+	$$->cb = $3;
 	}
  ;
 
 class_identification : CLASS identifier
 	{
-
+	$$->id = $2;
+	$$->extend = NULL;
+	$$->line_number = line_number;
 	}
 | CLASS identifier EXTENDS identifier
 	{
-
+	$$->id = $2;
+	$$->extend = $4;
+	$$->line_number = line_number;
 	}
 ;
 
@@ -181,85 +204,110 @@ class_block:
  variable_declaration_part
  func_declaration_list
 	{
-
+	$$->vdl = $1;
+	$$->fdl = $2;
 	}
  ;
 
 type_denoter : array_type
 	{
+	// 1 - array_type
+	// 2 - class_type
+	// 3 - base_type
+	$$->type = 1;
+	
+	// $$->name = ?;
+	$$->data.at = $1;
 
 	}
  | identifier
 	{
-
+	// $$->type = ?;
 	}
  ;
 
 array_type : ARRAY LBRAC range RBRAC OF type_denoter
 	{
-
+	$$->r = $3;
+	$$->td = $6;
 	}
  ;
 
 range : unsigned_integer DOTDOT unsigned_integer
 	{
-
+	$$->min = $1;
+	$$->max = $3;
+	// TODO: verify min <= max ?
 	}
  ;
 
 variable_declaration_part : VAR variable_declaration_list semicolon
 	{
-
+	// $$->vd = ?
+	// $$->next = ?
 	}
  |
 	{
-
+	// $$->vd = ?
+	// $$->next = ?
 	}
  ;
 
 variable_declaration_list : variable_declaration_list semicolon variable_declaration
 	{
-
+	// $$->next = ?
+	$$->vd = $3;
 	}
  | variable_declaration
 	{
-
+	// $$->next = ?
+	$$->vd = $1;
 	}
 
  ;
 
 variable_declaration : identifier_list COLON type_denoter
 	{
-
+	$$->il = $1;
+	$$->tden = $3;
+	$$->line_number = line_number;
 	}
  ;
 
 func_declaration_list : func_declaration_list semicolon function_declaration
 	{
-
+	// $$->next = ?
+	$$->fd = $3;
 	}
  | function_declaration
 	{
-
+	// $$->next = ?
+	$$->fd = $1;
 	}
  |
 	{
+	// $$->next = ?
+	// $$->fd = ?
 
 	}
  ;
 
 formal_parameter_list : LPAREN formal_parameter_section_list RPAREN 
 	{
-
+	// $$->id = ?
+	// $$->res = ?
+	$$->fpsl = $2;
 	}
 ;
 formal_parameter_section_list : formal_parameter_section_list semicolon formal_parameter_section
 	{
-
+	// $$->next = ?
+	$$->fps = $3;
 	}
  | formal_parameter_section
 	{
-
+	// $$->next = ?
+	$$->fps = $1;
 	}
  ;
 
