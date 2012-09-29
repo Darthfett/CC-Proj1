@@ -1,0 +1,4 @@
+y.tab.*
+opc
+*.o
+tests_semantic/results/*

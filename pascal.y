@@ -317,7 +317,10 @@ formal_parameter_section : value_parameter_specification
 
 value_parameter_specification : identifier_list COLON identifier
 	{
+	// The previous rule has nothing that needs to be done?
 
+	// $$->next = ?
+	$$->id = $3;
 	}
  ;
 
