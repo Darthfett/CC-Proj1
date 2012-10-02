@@ -11,7 +11,9 @@
 
 #include "shared.h"
 #include "rulefuncs.h"
+#include "usrdef.h"
 
+  struct myText text;
   int yylex(void);
   void yyerror(const char *error);
 
@@ -129,51 +131,91 @@
   int op;
 }
 
+
+
 %%
 
 program : program_heading semicolon class_list DOT
 	{
-
+	printf("program : program_heading semicolon class_list DOT \n");
+	program = $$;
+	
+	//$$->ph = $1;
+	//$$->cl = $3;
 	}
  ;
 
 program_heading : PROGRAM identifier
 	{
-
+	yylval.ph->id = yylval.id;
+	$$ = (struct program_heading_t *) malloc(sizeof(struct program_heading_t));
+	$$->id = $2;
+	printf("my text = %s\n\n",text.id);
+	printf("program_heading : PROGRAM identifier \n");
+	//$$ = $2;
 	}
  | PROGRAM identifier LPAREN identifier_list RPAREN
 	{
-
+	printf("my text = %s\n\n",text.id);
+	printf("PROGRAM identifier LPAREN identifier_list RPAREN \n");
+	//$$->id = $2;
+	//$$->il = $4;
 	}
  ;
 
 identifier_list : identifier_list comma identifier
         {
+	printf("identifier_list : identifier_list comma identifier \n%s",yytext);
+	// ?
 
+	//$$->next = $1; 
+	// 	OR 
+	// $1->next = $$
+	
+	//$$->id = $3;
         }
  | identifier
         {
-
+	printf("identifier_list : identifier \n");
+	//$$->next = NULL;  //OR just leave blank?
+	//$$->id = $1;
         }
  ;
 
 class_list: class_list class_identification PBEGIN class_block END
 	{
+	printf("class_list: class_list class_identification PBEGIN class_block END \n");
+	// ?
 
+	// $$->next = $1 
+	// 	OR 
+	// $1->next = $$
+
+	//$$->ci = $2;
+	//$$->cb = $4;
 	}
  | class_identification PBEGIN class_block END
 	{
-
+	printf("class_list: class_identification PBEGIN class_block END \n");
+	// $$->next = NULL  OR just leave blank?
+	//$$->ci = $1;
+	//$$->cb = $3;
 	}
  ;
 
 class_identification : CLASS identifier
 	{
-
+	printf("class_identification : CLASS identifier \n");
+	//$$->id = $2;
+	//$$->extend = NULL;
+	//$$->line_number = line_number;
 	}
 | CLASS identifier EXTENDS identifier
 	{
-
+	printf("class_identification : CLASS identifier EXTENDS identifier \n");
+	$$->id = $2;
+	$$->extend = $4;
+	$$->line_number = line_number;
 	}
 ;
 
@@ -181,128 +223,188 @@ class_block:
  variable_declaration_part
  func_declaration_list
 	{
-
+	printf("class_block:variable_declaration_part func_declaration_list \n");
+	$$->vdl = $1;
+	$$->fdl = $2;
 	}
  ;
 
 type_denoter : array_type
 	{
+	printf("type_denoter : array_type \n");
+	// 1 - array_type
+	// 2 - class_type
+	// 3 - base_type
+	$$->type = 1;
+	
+	// $$->name = ?;
+	$$->data.at = $1;
 
 	}
  | identifier
 	{
-
+	printf("type_denoter : identifier \n");
+	// $$->type = ?;
 	}
  ;
 
 array_type : ARRAY LBRAC range RBRAC OF type_denoter
 	{
-
+	printf("array_type : ARRAY LBRAC range RBRAC OF type_denoter \n");
+	$$->r = $3;
+	$$->td = $6;
 	}
  ;
 
 range : unsigned_integer DOTDOT unsigned_integer
 	{
-
+	printf("range : unsigned_integer DOTDOT unsigned_integer \n");
+	$$->min = $1;
+	$$->max = $3;
+	// TODO: verify min <= max ?
 	}
  ;
 
 variable_declaration_part : VAR variable_declaration_list semicolon
 	{
-
+	printf("variable_declaration_part : VAR variable_declaration_list semicolon \n");
+	// $$->vd = ?
+	// $$->next = ?
 	}
  |
 	{
-
+	printf("variable_declaration_part :  \n");
+	// $$->vd = ?
+	// $$->next = ?
 	}
  ;
 
 variable_declaration_list : variable_declaration_list semicolon variable_declaration
 	{
-
+	printf("variable_declaration_list : variable_declaration_list semicolon variable_declaration \n");
+	// $$->next = ?
+	$$->vd = $3;
 	}
  | variable_declaration
 	{
-
+	printf("variable_declaration_list : variable_declaration \n");
+	// $$->next = ?
+	$$->vd = $1;
 	}
 
  ;
 
 variable_declaration : identifier_list COLON type_denoter
 	{
-
+	printf("variable_declaration : identifier_list COLON type_denoter \n");
+	$$->il = $1;
+	$$->tden = $3;
+	$$->line_number = line_number;
 	}
  ;
 
 func_declaration_list : func_declaration_list semicolon function_declaration
 	{
-
+	printf("func_declaration_list : func_declaration_list semicolon function_declaration \n");
+	// $$->next = ?
+	$$->fd = $3;
 	}
  | function_declaration
 	{
-
+	printf("func_declaration_list : function_declaration \n");
+	// $$->next = ?
+	$$->fd = $1;
 	}
  |
 	{
+	printf("func_declaration_list :  \n");
+	// $$->next = ?
+	// $$->fd = ?
 
 	}
  ;
 
 formal_parameter_list : LPAREN formal_parameter_section_list RPAREN 
 	{
-
+	printf("formal_parameter_list : LPAREN formal_parameter_section_list RPAREN  \n");
+	// ?
 	}
 ;
 formal_parameter_section_list : formal_parameter_section_list semicolon formal_parameter_section
 	{
-
+	printf("formal_parameter_section_list : formal_parameter_section_list semicolon formal_parameter_section \n");
+	// $$->next = ?
+	$$->fps = $3;
 	}
  | formal_parameter_section
 	{
-
+	printf("formal_parameter_section_list : formal_parameter_section \n");
+	// $$->next = ?
+	$$->fps = $1;
 	}
  ;
 
 formal_parameter_section : value_parameter_specification
+	{
+	printf("formal_parameter_section : value_parameter_specification \n");
+	
+	}
  | variable_parameter_specification
+ 	{
+	printf("formal_parameter_section : variable_parameter_specification \n");
+ 	}
  ;
 
 value_parameter_specification : identifier_list COLON identifier
 	{
+	printf("value_parameter_specification : identifier_list COLON identifier \n");
+	// The previous rule has nothing that needs to be done?
 
+	// $$->next = ?
+	$$->id = $3;
 	}
  ;
 
 variable_parameter_specification : VAR identifier_list COLON identifier
 	{
+	printf("variable_parameter_specification : VAR identifier_list COLON identifier \n");
 
 	}
  ;
 
 function_declaration : function_identification semicolon function_block
 	{
+	printf("function_declaration : function_identification semicolon function_block \n");
 
 	}
  | function_heading semicolon function_block
 	{
+	printf("function_declaration : function_heading semicolon function_block \n");
 
 	}
  ;
 
 function_heading : FUNCTION identifier COLON result_type
 	{
+	printf("function_heading : FUNCTION identifier COLON result_type \n");
 
 	}
  | FUNCTION identifier formal_parameter_list COLON result_type
 	{
+	printf("function_heading : FUNCTION identifier formal_parameter_list COLON result_type \n");
 
 	}
  ;
 
-result_type : identifier ;
+result_type : identifier
+	{
+	printf("result_type : identifier \n");
+	}
+ ;
 
 function_identification : FUNCTION identifier
 	{
+	printf("function_identification : FUNCTION identifier \n");
 
 	}
 ;
@@ -311,133 +413,165 @@ function_block :
   variable_declaration_part
   statement_part
 	{
+	printf("function_block : variable_declaration_part statement_part \n");
 
 	}
 ;
 
 statement_part : compound_statement
+	{
+	printf("statement_part : compound_statement \n");
+	}
  ;
 
 compound_statement : PBEGIN statement_sequence END
 	{
+	printf("compound_statement : PBEGIN statement_sequence END \n");
 
 	}
  ;
 
 statement_sequence : statement
 	{
+	printf("statement_sequence : statement \n");
 
 	}
  | statement_sequence semicolon statement
 	{
+	printf("statement_sequence : statement_sequence semicolon statement \n");
 
 	}
  ;
 
 statement : assignment_statement
 	{
+	printf("statement : assignment_statement \n");
 
 	}
  | compound_statement
 	{
+	printf("statement : compound_statement \n");
 
 	}
  | if_statement
 	{
+	printf("statement : if_statement \n");
 
 	}
  | while_statement
 	{
+	printf("statement : while_statement \n");
 
 	}
  | print_statement
         {
+	printf("statement : print_statement \n");
 
         }
  ;
 
 while_statement : WHILE boolean_expression DO statement
 	{
+	printf("while_statement : WHILE boolean_expression DO statement \n");
 
 	}
  ;
 
 if_statement : IF boolean_expression THEN statement ELSE statement
 	{
+	printf("if_statement : IF boolean_expression THEN statement ELSE statement \n");
 
 	}
  ;
 
 assignment_statement : variable_access ASSIGNMENT expression
 	{
+	printf("assignment_statement : variable_access ASSIGNMENT expression \n");
 
 	}
  | variable_access ASSIGNMENT object_instantiation
 	{
+	printf("assignment_statement : variable_access ASSIGNMENT object_instantiation \n");
 
 	}
  ;
 
 object_instantiation: NEW identifier
 	{
+	printf("object_instantiation: NEW identifier \n");
 
 	}
  | NEW identifier params
 	{
+	printf("object_instantiation: NEW identifier params \n");
 
 	}
 ;
 
 print_statement : PRINT variable_access
         {
+	printf("print_statement : PRINT variable_access \n");
 
         }
 ;
 
 variable_access : identifier
 	{
+	printf("variable_access : identifier \n");
 
 	}
  | indexed_variable
 	{
+	printf("variable_access : indexed_variable \n");
 
 	}
  | attribute_designator
 	{
+	printf("variable_access : attribute_designator \n");
 
 	}
  | method_designator
 	{
+	printf("variable_access : method_designator \n");
 
 	}
  ;
 
 indexed_variable : variable_access LBRAC index_expression_list RBRAC
 	{
+	printf("indexed_variable : variable_access LBRAC index_expression_list RBRAC \n");
 
 	}
  ;
 
 index_expression_list : index_expression_list comma index_expression
 	{
+	printf("index_expression_list : index_expression_list comma index_expression \n");
 
 	}
  | index_expression
 	{
+	printf("index_expression_list : index_expression \n");
 
 	}
  ;
 
-index_expression : expression ;
+index_expression : expression
+	{
+	printf("index_expression : expression \n");
+
+	} ;
 
 attribute_designator : variable_access DOT identifier
 	{
+	printf("attribute_designator : variable_access DOT identifier \n");
 
 	}
 ;
 
 method_designator: variable_access DOT function_designator
 	{
+	printf("method_designator: variable_access DOT function_designator \n");
 
 	}
  ;
@@ -445,72 +579,90 @@ method_designator: variable_access DOT function_designator
 
 params : LPAREN actual_parameter_list RPAREN 
 	{
+	printf("params : LPAREN actual_parameter_list RPAREN  \n");
 
 	}
  ;
 
 actual_parameter_list : actual_parameter_list comma actual_parameter
 	{
+	printf("actual_parameter_list : actual_parameter_list comma actual_parameter \n");
 
 	}
  | actual_parameter 
 	{
+	printf("actual_parameter_list : actual_parameter \n");
 
 	}
  ;
 
 actual_parameter : expression
 	{
+	printf("actual_parameter : expression \n");
 
 	}
  | expression COLON expression
 	{
+	printf("actual_parameter : expression COLON expression \n");
 
 	}
  | expression COLON expression COLON expression
 	{
+	printf("actual_parameter : expression COLON expression COLON expression \n");
 
 	}
  ;
 
-boolean_expression : expression ;
+boolean_expression : expression
+	{
+	printf("boolean_expression : expression \n");
+
+	} ;
 
 expression : simple_expression
 	{
+	printf("expression : simple_expression \n");
 
 	}
  | simple_expression relop simple_expression
 	{
+	printf("expression : simple_expression relop simple_expression \n");
 
 	}
  ;
 
 simple_expression : term
 	{
+	printf("simple_expression : term \n");
 
 	}
  | simple_expression addop term
 	{
+	printf("simple_expression : simple_expression addop term \n");
 
 	}
  ;
 
 term : factor
 	{
+	printf("term : factor \n");
 
 	}
  | term mulop factor
 	{
+	printf("term : term mulop factor \n");
 
 	}
  ;
 
 sign : PLUS
 	{
+	printf("sign : PLUS \n");
 
 	}
  | MINUS
 	{
+	printf("sign : MINUS \n");
 
 	}
  ;
@@ -625,14 +777,20 @@ relop : EQUAL
 
 identifier : IDENTIFIER
 	{
-
+		
 	}
  ;
 
 semicolon : SEMICOLON
+	{
+
+	}
  ;
 
 comma : COMMA
+	{
+
+	}
  ;
 
 %%
