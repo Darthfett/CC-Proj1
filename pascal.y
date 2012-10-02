@@ -137,11 +137,13 @@
 
 program : program_heading semicolon class_list DOT
 	{
+
 	printf("program : program_heading semicolon class_list DOT \n");
-	program = $$;
 	
-	//$$->ph = $1;
-	//$$->cl = $3;
+	program = $$;
+	$$->ph = $1;
+	$$->cl = $3;
+
 	}
  ;
 
@@ -158,8 +160,9 @@ program_heading : PROGRAM identifier
 	{
 	printf("my text = %s\n\n",text.id);
 	printf("PROGRAM identifier LPAREN identifier_list RPAREN \n");
-	//$$->id = $2;
-	//$$->il = $4;
+
+	$$->id = $2;
+	$$->il = $4;
 	}
  ;
 
@@ -179,6 +182,8 @@ identifier_list : identifier_list comma identifier
 	printf("identifier_list : identifier \n");
 	//$$->next = NULL;  //OR just leave blank?
 	//$$->id = $1;
+	$$->next = NULL;
+	$$->id = $1;
         }
  ;
 
@@ -200,6 +205,10 @@ class_list: class_list class_identification PBEGIN class_block END
 	// $$->next = NULL  OR just leave blank?
 	//$$->ci = $1;
 	//$$->cb = $3;
+
+	$$->next = NULL;
+	$$->ci = $1;
+	$$->cb = $3;
 	}
  ;
 
@@ -215,7 +224,6 @@ class_identification : CLASS identifier
 	printf("class_identification : CLASS identifier EXTENDS identifier \n");
 	$$->id = $2;
 	$$->extend = $4;
-	$$->line_number = line_number;
 	}
 ;
 
@@ -224,6 +232,7 @@ class_block:
  func_declaration_list
 	{
 	printf("class_block:variable_declaration_part func_declaration_list \n");
+
 	$$->vdl = $1;
 	$$->fdl = $2;
 	}
@@ -276,6 +285,8 @@ variable_declaration_part : VAR variable_declaration_list semicolon
 	printf("variable_declaration_part :  \n");
 	// $$->vd = ?
 	// $$->next = ?
+	$$->vd = NULL;
+	$$->next = NULL;
 	}
  ;
 
@@ -283,12 +294,15 @@ variable_declaration_list : variable_declaration_list semicolon variable_declara
 	{
 	printf("variable_declaration_list : variable_declaration_list semicolon variable_declaration \n");
 	// $$->next = ?
+	$$->next = $1;
+
 	$$->vd = $3;
 	}
  | variable_declaration
 	{
 	printf("variable_declaration_list : variable_declaration \n");
 	// $$->next = ?
+	$$->next = NULL;
 	$$->vd = $1;
 	}
 
@@ -307,12 +321,14 @@ func_declaration_list : func_declaration_list semicolon function_declaration
 	{
 	printf("func_declaration_list : func_declaration_list semicolon function_declaration \n");
 	// $$->next = ?
+	$$->next = $1;
 	$$->fd = $3;
 	}
  | function_declaration
 	{
 	printf("func_declaration_list : function_declaration \n");
 	// $$->next = ?
+	$$->next = NULL;
 	$$->fd = $1;
 	}
  |
@@ -321,6 +337,8 @@ func_declaration_list : func_declaration_list semicolon function_declaration
 	// $$->next = ?
 	// $$->fd = ?
 
+	$$->next = NULL;
+	$$->fd = NULL;
 	}
  ;
 
@@ -328,18 +346,22 @@ formal_parameter_list : LPAREN formal_parameter_section_list RPAREN
 	{
 	printf("formal_parameter_list : LPAREN formal_parameter_section_list RPAREN  \n");
 	// ?
+	// ?
+	//printf(typeof($$) + "\n");
 	}
 ;
 formal_parameter_section_list : formal_parameter_section_list semicolon formal_parameter_section
 	{
 	printf("formal_parameter_section_list : formal_parameter_section_list semicolon formal_parameter_section \n");
 	// $$->next = ?
+	$$->next = $1;
 	$$->fps = $3;
 	}
  | formal_parameter_section
 	{
 	printf("formal_parameter_section_list : formal_parameter_section \n");
 	// $$->next = ?
+	$$->next = NULL;
 	$$->fps = $1;
 	}
  ;
@@ -777,7 +799,7 @@ relop : EQUAL
 
 identifier : IDENTIFIER
 	{
-		
+	return yytext;
 	}
  ;
 

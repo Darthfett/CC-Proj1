@@ -26,7 +26,7 @@ void semantic_analysis(struct program_t *p)
   } else {
     printf("p is not NULL\n");
   }
-
+  return;
   temp_cl = p->cl;
   while (temp_cl != NULL) {
 

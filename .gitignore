@@ -1,0 +1,7 @@
+*.inc
+lex.yy.c
+y.output
+y.tab.*
+opc
+*.o
+tests_semantic/results/*
