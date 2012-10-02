@@ -152,35 +152,25 @@ program_heading : PROGRAM identifier
 
 identifier_list : identifier_list comma identifier
         {
-	// ?
-
-	// $$->next = $1 
-	// 	OR 
-	// $1->next = $$
-	
+	$$->next = $1;
 	$$->id = $3;
         }
  | identifier
         {
-	// $$->next = NULL  OR just leave blank?
+	$$->next = NULL;
 	$$->id = $1;
         }
  ;
 
 class_list: class_list class_identification PBEGIN class_block END
 	{
-	// ?
-
-	// $$->next = $1 
-	// 	OR 
-	// $1->next = $$
-
+	$$->next = $1;
 	$$->ci = $2;
 	$$->cb = $4;
 	}
  | class_identification PBEGIN class_block END
 	{
-	// $$->next = NULL  OR just leave blank?
+	$$->next = NULL;
 	$$->ci = $1;
 	$$->cb = $3;
 	}
@@ -243,24 +233,24 @@ range : unsigned_integer DOTDOT unsigned_integer
 
 variable_declaration_part : VAR variable_declaration_list semicolon
 	{
-	// $$->vd = ?
-	// $$->next = ?
+	$$->vd = $2->vd;
+	$$->next = $2->next;
 	}
  |
 	{
-	// $$->vd = ?
-	// $$->next = ?
+	$$->vd = NULL;
+	$$->next = NULL;
 	}
  ;
 
 variable_declaration_list : variable_declaration_list semicolon variable_declaration
 	{
-	// $$->next = ?
+	$$->next = $1;
 	$$->vd = $3;
 	}
  | variable_declaration
 	{
-	// $$->next = ?
+	$$->next = NULL;
 	$$->vd = $1;
 	}
 
@@ -276,35 +266,35 @@ variable_declaration : identifier_list COLON type_denoter
 
 func_declaration_list : func_declaration_list semicolon function_declaration
 	{
-	// $$->next = ?
+	$$->next = $1;
 	$$->fd = $3;
 	}
  | function_declaration
 	{
-	// $$->next = ?
+	$$->next = NULL;
 	$$->fd = $1;
 	}
  |
 	{
-	// $$->next = ?
-	// $$->fd = ?
-
+	$$->next = NULL;
+	$$->fd = NULL;
 	}
  ;
 
 formal_parameter_list : LPAREN formal_parameter_section_list RPAREN 
 	{
 	// ?
+	//printf(typeof($$) + "\n");
 	}
 ;
 formal_parameter_section_list : formal_parameter_section_list semicolon formal_parameter_section
 	{
-	// $$->next = ?
+	$$->next = $1;
 	$$->fps = $3;
 	}
  | formal_parameter_section
 	{
-	// $$->next = ?
+	$$->next = NULL;
 	$$->fps = $1;
 	}
  ;
@@ -674,7 +664,7 @@ relop : EQUAL
 
 identifier : IDENTIFIER
 	{
-
+	return yytext;
 	}
  ;
 
