@@ -139,9 +139,8 @@ program : program_heading semicolon class_list DOT
 	{
 	
 	printf("program : program_heading semicolon class_list DOT \n");
-	if ($$ != NULL)
-		printf("Error - malloc overwrites an existing value");
 	$$ = (struct program_t*) malloc(sizeof(struct program_t));
+
 	program = $$;
 	$$->ph = $1;
 	$$->cl = $3;
@@ -191,24 +190,19 @@ identifier_list : identifier_list comma identifier
         }
  ;
 
-class_list: class_list class_identification PBEGIN class_block END
+class_list : class_list class_identification PBEGIN class_block END
 	{
-	printf("class_list: class_list class_identification PBEGIN class_block END \n");
-	// ?
-
-	// $$->next = $1 
-	// 	OR 
-	// $1->next = $$
-
-	//$$->ci = $2;
-	//$$->cb = $4;
+	printf("class_list : class_list class_identification PBEGIN class_block END \n");
+	$$ = (struct class_list_t*) malloc(sizeof(struct class_list_t));
+	
+	$$->next = $1;
+	$$->ci = $2;
+	$$->cb = $4;
 	}
  | class_identification PBEGIN class_block END
 	{
-	printf("class_list: class_identification PBEGIN class_block END \n");
-	// $$->next = NULL  OR just leave blank?
-	//$$->ci = $1;
-	//$$->cb = $3;
+	printf("class_list : class_identification PBEGIN class_block END \n");
+	$$ = (struct class_list_t*) malloc(sizeof(struct class_list_t));
 
 	$$->next = NULL;
 	$$->ci = $1;
@@ -231,11 +225,10 @@ class_identification : CLASS identifier
 	}
 ;
 
-class_block:
- variable_declaration_part
- func_declaration_list
+class_block : variable_declaration_part func_declaration_list
 	{
-	printf("class_block:variable_declaration_part func_declaration_list \n");
+	printf("class_block : variable_declaration_part func_declaration_list \n");
+	$$ = (struct class_block_t*) malloc(sizeof(struct class_block_t));
 
 	$$->vdl = $1;
 	$$->fdl = $2;
@@ -264,6 +257,7 @@ type_denoter : array_type
 array_type : ARRAY LBRAC range RBRAC OF type_denoter
 	{
 	printf("array_type : ARRAY LBRAC range RBRAC OF type_denoter \n");
+	$$ = (struct array_type_t*) malloc(sizeof(struct array_type_t));
 	$$->r = $3;
 	$$->td = $6;
 	}
@@ -272,6 +266,7 @@ array_type : ARRAY LBRAC range RBRAC OF type_denoter
 range : unsigned_integer DOTDOT unsigned_integer
 	{
 	printf("range : unsigned_integer DOTDOT unsigned_integer \n");
+	$$ = (struct range_t*) malloc(sizeof(struct range_t));
 	$$->min = $1;
 	$$->max = $3;
 	// TODO: verify min <= max ?
@@ -324,6 +319,7 @@ variable_declaration : identifier_list COLON type_denoter
 func_declaration_list : func_declaration_list semicolon function_declaration
 	{
 	printf("func_declaration_list : func_declaration_list semicolon function_declaration \n");
+	$$ = (struct func_declaration_list_t*) malloc(sizeof(struct func_declaration_list_t));
 	// $$->next = ?
 	$$->next = $1;
 	$$->fd = $3;
@@ -331,6 +327,7 @@ func_declaration_list : func_declaration_list semicolon function_declaration
  | function_declaration
 	{
 	printf("func_declaration_list : function_declaration \n");
+	$$ = (struct func_declaration_list_t*) malloc(sizeof(struct func_declaration_list_t));
 	// $$->next = ?
 	$$->next = NULL;
 	$$->fd = $1;
@@ -338,8 +335,7 @@ func_declaration_list : func_declaration_list semicolon function_declaration
  |
 	{
 	printf("func_declaration_list :  \n");
-	// $$->next = ?
-	// $$->fd = ?
+	$$ = (struct func_declaration_list_t*) malloc(sizeof(struct func_declaration_list_t));
 
 	$$->next = NULL;
 	$$->fd = NULL;
