@@ -139,6 +139,8 @@ program : program_heading semicolon class_list DOT
 	{
 	
 	printf("program : program_heading semicolon class_list DOT \n");
+	if ($$ != NULL)
+		printf("Error - malloc overwrites an existing value");
 	$$ = (struct program_t*) malloc(sizeof(struct program_t));
 	program = $$;
 	$$->ph = $1;
@@ -149,11 +151,12 @@ program : program_heading semicolon class_list DOT
 
 program_heading : PROGRAM identifier
 	{
-	yylval.ph->id = yylval.id;
+	printf("program_heading : PROGRAM identifier \n");
+	// printf("%s\n", yylval.id);
+	// yylval.ph->id = yylval.id;
 	$$ = (struct program_heading_t *) malloc(sizeof(struct program_heading_t));
 	$$->id = $2;
 	// printf("my text = %s\n\n",text.id);
-	printf("program_heading : PROGRAM identifier \n");
 	//$$ = $2;
 	}
  | PROGRAM identifier LPAREN identifier_list RPAREN
@@ -180,6 +183,7 @@ identifier_list : identifier_list comma identifier
  | identifier
         {
 	printf("identifier_list : identifier \n");
+	$$ = (struct identifier_list_t*) malloc(sizeof(struct identifier_list_t));
 	//$$->next = NULL;  //OR just leave blank?
 	//$$->id = $1;
 	$$->next = NULL;
