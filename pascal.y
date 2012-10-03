@@ -152,8 +152,7 @@ program_heading : PROGRAM identifier
 	{
 	printf("program_heading : PROGRAM identifier \n");
 	$$ = (struct program_heading_t *) malloc(sizeof(struct program_heading_t));
-	$$->id = (char*) malloc((strlen($2) + 1));
-	strcpy($$->id, $2);
+	$$->id = $2;
 	}
  | PROGRAM identifier LPAREN identifier_list RPAREN
 	{
@@ -213,8 +212,7 @@ class_identification : CLASS identifier
 	printf("class_identification : CLASS identifier \n");
 
 	$$ = (struct class_identification_t*) malloc(sizeof(struct class_identification_t));
-	$$->id = (char*) malloc(strlen($2) + 1);
-	strcpy($$->id, $2);
+	$$->id = $2;
 	$$->extend = NULL;
 	$$->line_number = line_number;
 	}
@@ -223,8 +221,7 @@ class_identification : CLASS identifier
 	printf("class_identification : CLASS identifier EXTENDS identifier \n");
 
 	$$ = (struct class_identification_t*) malloc(sizeof(struct class_identification_t));
-	$$->id = (char*) malloc(strlen($2) + 1);
-	strcpy($$->id, $2);
+	$$->id = $2;
 	$$->extend = $4;
 	$$->line_number = line_number;
 	}
