@@ -140,7 +140,7 @@ program : program_heading semicolon class_list DOT
 	{
 	
 	printf("program : program_heading semicolon class_list DOT \n");
-	// $$ = (struct program_t*) malloc(sizeof(struct program_t));
+	$$ = (struct program_t*) malloc(sizeof(struct program_t));
 
 	program = $$;
 	$$->ph = $1;
