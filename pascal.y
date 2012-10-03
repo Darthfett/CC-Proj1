@@ -12,6 +12,7 @@
 #include "shared.h"
 #include "rulefuncs.h"
 #include "usrdef.h"
+#include <assert.h>
 
   // struct myText text;
   int yylex(void);
@@ -144,7 +145,6 @@ program : program_heading semicolon class_list DOT
 	program = $$;
 	$$->ph = $1;
 	$$->cl = $3;
-
 	}
  ;
 
@@ -152,13 +152,15 @@ program_heading : PROGRAM identifier
 	{
 	printf("program_heading : PROGRAM identifier \n");
 	$$ = (struct program_heading_t *) malloc(sizeof(struct program_heading_t));
-	$$->id = $2;
+	$$->id = (char*) malloc((strlen($2) + 1));
+	strcpy($$->id, $2);
 	}
  | PROGRAM identifier LPAREN identifier_list RPAREN
 	{
 	// printf("my text = %s\n\n",text.id);
 	printf("PROGRAM identifier LPAREN identifier_list RPAREN \n");
 
+	$$ = (struct program_heading_t *) malloc(sizeof(struct program_heading_t));
 	$$->id = $2;
 	$$->il = $4;
 	}
@@ -209,15 +211,22 @@ class_list : class_list class_identification PBEGIN class_block END
 class_identification : CLASS identifier
 	{
 	printf("class_identification : CLASS identifier \n");
-	//$$->id = $2;
-	//$$->extend = NULL;
-	//$$->line_number = line_number;
+
+	$$ = (struct class_identification_t*) malloc(sizeof(struct class_identification_t));
+	$$->id = (char*) malloc(strlen($2) + 1);
+	strcpy($$->id, $2);
+	$$->extend = NULL;
+	$$->line_number = line_number;
 	}
 | CLASS identifier EXTENDS identifier
 	{
 	printf("class_identification : CLASS identifier EXTENDS identifier \n");
-	$$->id = $2;
+
+	$$ = (struct class_identification_t*) malloc(sizeof(struct class_identification_t));
+	$$->id = (char*) malloc(strlen($2) + 1);
+	strcpy($$->id, $2);
 	$$->extend = $4;
+	$$->line_number = line_number;
 	}
 ;
 
@@ -341,22 +350,17 @@ func_declaration_list : func_declaration_list semicolon function_declaration
 formal_parameter_list : LPAREN formal_parameter_section_list RPAREN 
 	{
 	printf("formal_parameter_list : LPAREN formal_parameter_section_list RPAREN  \n");
-	// ?
-	// ?
-	//printf(typeof($$) + "\n");
 	}
 ;
 formal_parameter_section_list : formal_parameter_section_list semicolon formal_parameter_section
 	{
 	printf("formal_parameter_section_list : formal_parameter_section_list semicolon formal_parameter_section \n");
-	// $$->next = ?
 	$$->next = $1;
 	$$->fps = $3;
 	}
  | formal_parameter_section
 	{
 	printf("formal_parameter_section_list : formal_parameter_section \n");
-	// $$->next = ?
 	$$->next = NULL;
 	$$->fps = $1;
 	}
@@ -795,7 +799,8 @@ relop : EQUAL
 
 identifier : IDENTIFIER
 	{
-
+	$$ = (char*) malloc((strlen(yytext) + 1));
+	strcpy($$, yytext);
 	}
  ;
 
