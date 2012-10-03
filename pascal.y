@@ -13,7 +13,7 @@
 #include "rulefuncs.h"
 #include "usrdef.h"
 
-  struct myText text;
+  // struct myText text;
   int yylex(void);
   void yyerror(const char *error);
 
@@ -137,9 +137,9 @@
 
 program : program_heading semicolon class_list DOT
 	{
-
-	printf("program : program_heading semicolon class_list DOT \n");
 	
+	printf("program : program_heading semicolon class_list DOT \n");
+	$$ = (struct program_t*) malloc(sizeof(struct program_t));
 	program = $$;
 	$$->ph = $1;
 	$$->cl = $3;
@@ -152,13 +152,13 @@ program_heading : PROGRAM identifier
 	yylval.ph->id = yylval.id;
 	$$ = (struct program_heading_t *) malloc(sizeof(struct program_heading_t));
 	$$->id = $2;
-	printf("my text = %s\n\n",text.id);
+	// printf("my text = %s\n\n",text.id);
 	printf("program_heading : PROGRAM identifier \n");
 	//$$ = $2;
 	}
  | PROGRAM identifier LPAREN identifier_list RPAREN
 	{
-	printf("my text = %s\n\n",text.id);
+	// printf("my text = %s\n\n",text.id);
 	printf("PROGRAM identifier LPAREN identifier_list RPAREN \n");
 
 	$$->id = $2;
@@ -799,7 +799,7 @@ relop : EQUAL
 
 identifier : IDENTIFIER
 	{
-	return yytext;
+
 	}
  ;
 
