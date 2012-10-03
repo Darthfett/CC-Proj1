@@ -16,15 +16,16 @@ typedef struct NODE {
 	enum node_color	color;
 	char *data;
 	char *type;
+	struct NODE *root;
 } *Node;
 
 typedef struct TREE {
 	Node root;
 } Tree;
 
-int insert(Tree *t,char* tag);
+Node insert(Tree *t,char*scope ,char* id);
 Node createNode(char * data);
-Node findNode(Tree t,char * data);
+Node find(Tree t,char* scope,char * data);
 void printTree(Tree t);
 void newTree(Tree *t);
 

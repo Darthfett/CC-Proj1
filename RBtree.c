@@ -7,34 +7,67 @@
 #include "RBtree.h"
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdio.h>
 #define tnull NULL
 
 Node insertNode ( Node p, Node n );
 int compare ( Node first, Node second );
 Node grandParent ( Node n );
 Node getUncle(Node n);
-void fix(Tree *t, Node n);
+Node fix(Node t, Node n);
 void rotateLeft(Node n);
 void rotateRight(Node n);
+Node findNode(Node root, char * data);
 
-int insert(Tree *t, char *tag)
+Node insertTree(Node t, char* id);
+Node insert(Tree *t,char* scope, char *id)
 {
 	// Default return value is 0 or failed to insert this node
-	int rval = 0;
-	Node n = createNode(tag);
+		Node rval = tnull;
+		Node n = createNode(scope);
+		do {
+			if ( t->root == tnull ) {
+				// We do not have anything in our tree yet
+				t->root = n;
+				t->root->color = BLACK;
+				rval = insertTree(n,id);
+				break;
+			}
+			Node temp = findNode(t->root,scope);
+			if ( temp == tnull ) {
+				n = insertNode( t->root, createNode(scope) );
+				if ( n != tnull ) {
+					printf("new Tree node added to scopes\n\n");
+					printTree(*t);
+					printf("---------------------------------\n");
+					t->root=fix(t->root,n);
+					rval = insertTree(n,id);
+				}
+				break;
+			}
+			n = insertTree(temp,id);
+
+			rval = n;
+		} while ( 0 );
+		return rval;
+}
+Node insertTree(Node t, char* id)
+{
+	// Default return value is 0 or failed to insert this node
+	Node rval = tnull;
+	Node n = createNode(id);
 	do {
 		if ( t->root == tnull ) {
 			// We do not have anything in our tree yet
 			t->root = n;
 			t->root->color = BLACK;
-			rval = 1;
+			rval = n;
 			break;
 		}
 
 		n = insertNode( t->root, n );
 		if ( n != tnull ) {
-			fix(t,n);
+			t->root = fix(t->root,n);
 		}
 	} while ( 0 );
 	return rval;
@@ -47,7 +80,7 @@ Node insertNode ( Node p, Node n )
 {
 	Node rval = tnull;
 	do {
-		int i =compare(p,n);
+		int i = compare(p,n);
 		if ( i == 0 ) {
 			// we cannot insert the same name twice
 			break;
@@ -75,16 +108,16 @@ Node insertNode ( Node p, Node n )
 	return rval;
 }
 
-void fix(Tree *t, Node n)
+Node fix(Node root, Node n)
 {
+	Node rval = root;
 	Node u, g;
-	while ( n != t->root )
+	while ( n->parent != tnull )
 	{
 		u = getUncle(n);
 		g = grandParent(n);
 
 		if ( n->parent->color == BLACK ) {
-			n = t->root;
 			break;
 		}
 		// check what color the Uncle is
@@ -114,9 +147,14 @@ void fix(Tree *t, Node n)
 		} else {
 			rotateLeft(n->parent);
 		}
-		n = t->root;
+		n = n->parent;
+		break;
 	}
-	t->root->color = BLACK;
+	if ( n->parent == tnull ) {
+		rval = n;
+	}
+	rval->color = BLACK;
+	return rval;
 }
 Node grandParent ( Node n )
 {
@@ -205,12 +243,13 @@ Node createNode(char * data)
 	rval->right = tnull;
 	rval->data = data;
 	rval->type = tnull;
+	rval->root = tnull;
 	return rval;
 }
-Node findNode(Tree t,char * data)
+Node findNode(Node root, char * data)
 {
 	Node n = createNode(data);
-	Node current = t.root;
+	Node current = root;
 	int diff = -1;
 	while ( diff != 0 && current != tnull ) {
 		diff = compare(current,n);
@@ -220,9 +259,7 @@ Node findNode(Tree t,char * data)
 			current = current->left;
 		}
 	}
-	if ( diff == 0 ) {
-		n = current;
-	}
+	n = current;
 	return n;
 }
 Node leftMost( Node n)
@@ -291,3 +328,16 @@ void printTree(Tree t) {
 	}
 }
 
+Node find(Tree t,char* scope,char * data)
+{
+	Node rval = tnull;
+	do
+	{
+		Node s = findNode(t.root,scope);
+		if ( s == tnull ) {
+			break;
+		}
+		rval = findNode(s->root, data);
+	} while (0);
+	return rval;
+}
