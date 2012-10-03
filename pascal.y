@@ -139,7 +139,7 @@ program : program_heading semicolon class_list DOT
 	{
 	
 	printf("program : program_heading semicolon class_list DOT \n");
-	$$ = (struct program_t*) malloc(sizeof(struct program_t));
+	// $$ = (struct program_t*) malloc(sizeof(struct program_t));
 
 	program = $$;
 	$$->ph = $1;
@@ -151,12 +151,8 @@ program : program_heading semicolon class_list DOT
 program_heading : PROGRAM identifier
 	{
 	printf("program_heading : PROGRAM identifier \n");
-	// printf("%s\n", yylval.id);
-	// yylval.ph->id = yylval.id;
 	$$ = (struct program_heading_t *) malloc(sizeof(struct program_heading_t));
 	$$->id = $2;
-	// printf("my text = %s\n\n",text.id);
-	//$$ = $2;
 	}
  | PROGRAM identifier LPAREN identifier_list RPAREN
 	{
