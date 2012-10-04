@@ -29,15 +29,20 @@ void* get_hashtable_item(struct hash_table_t *hashtable, char *key);
 int insert_item(struct hash_table_t *hashtable, char *key, void *value, int value_type);
 
 struct ht_item_t {
-    char *key;
     void *value;
     int value_type;
-    struct ht_item_t *next;
+};
+
+struct ht_node_t {
+    char *key;
+    struct ht_item_t *value;
+
+    struct ht_node_t *next;
 };
 
 struct hash_table_t {
     int size;
-    struct ht_item_t **table;
+    struct ht_node_t **table;
 };
 
 
