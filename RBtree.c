@@ -38,7 +38,7 @@ Node insert(Tree *t,char* scope, char *id)
 				n = insertNode( t->root, createNode(scope) );
 				if ( n != tnull ) {
 					printf("new Tree node added to scopes\n\n");
-					printTree(*t);
+					printTree(t->root);
 					printf("---------------------------------\n");
 					t->root=fix(t->root,n);
 					rval = insertTree(n,id);
@@ -309,8 +309,8 @@ Node nextRightChild(Node n)
 	return n;
 }
 
-void printTree(Tree t) {
-	Node n = t.root;
+void printTree(Node root) {
+	Node n = root;
 	int done = 0;
 	if ( n != tnull ) {
 		while ( !done ) {

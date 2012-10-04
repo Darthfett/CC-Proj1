@@ -26,7 +26,7 @@ typedef struct TREE {
 Node insert(Tree *t,char*scope ,char* id);
 Node createNode(char * data);
 Node find(Tree t,char* scope,char * data);
-void printTree(Tree t);
+void printTree(Node root);
 void newTree(Tree *t);
 
 #endif /* RBTREE_H_ */
