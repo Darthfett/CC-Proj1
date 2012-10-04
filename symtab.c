@@ -58,7 +58,7 @@ struct ht_item_t* get_hashtable_item(struct hash_table_t *hashtable, char *key)
     return NULL;
 }
 
-int insert_item(struct hash_table_t *hashtable, char *key, struct ht_item_t *value, int value_type)
+int insert_item(struct hash_table_t *hashtable, char *key, struct ht_item_t *value)
 {
 	// The default return value is 0 not found.
 	int rval = 0;
@@ -75,6 +75,7 @@ int insert_item(struct hash_table_t *hashtable, char *key, struct ht_item_t *val
 		}
 
 		new_node = (struct ht_node_t*) malloc(sizeof(struct ht_node_t));
+                new_node->key = (char*) malloc(strlen(key) + 1);
 		strcpy(new_node->key, key);
 		new_node->value = value;
 
@@ -86,7 +87,32 @@ int insert_item(struct hash_table_t *hashtable, char *key, struct ht_item_t *val
 	return rval;
 }
 
-// remove_item(struct hash_table_t* table, char *key
+struct ht_item_t *remove_item(struct hash_table_t* table, char *key)
+{
+    /* Remove an item from a hashtable, and return the item to the user (user becomes responsible for memory of the item */
+    int hashed_key = hash(table, key);
+    struct ht_node_t *prev = NULL;
+    struct ht_node_t *node = table->table[hashed_key];
+    struct ht_item_t *value = NULL;
+
+    while (node != NULL) {
+        if (strcmp(key, node->key) == 0) {
+            value = node->value;
+            if (prev == NULL) {
+                table->table[hashed_key] = node->next;
+            } else {
+                prev->next = node->next;
+            }
+
+            free(node->key);
+            free(node);
+            break;
+        }
+        prev = node;
+        node = node->next;
+    }
+    return value;
+}
 
 /* ------------------------------------------------------------
  * Initializes the symbol table
