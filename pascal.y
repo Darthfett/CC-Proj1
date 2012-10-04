@@ -239,10 +239,7 @@ type_denoter : array_type
 	printf("type_denoter : array_type \n");
 
         $$ = (struct type_denoter_t*) malloc(sizeof(struct type_denoter_t));
-	// 1 - array_type
-	// 2 - class_type
-	// 3 - base_type
-	$$->type = 1;
+	$$->type = TYPE_DENOTER_T_ARRAY_TYPE;
 	
 	// $$->name = ?;
 	$$->data.at = $1;
@@ -541,67 +538,103 @@ statement : assignment_statement
 while_statement : WHILE boolean_expression DO statement
 	{
 	printf("while_statement : WHILE boolean_expression DO statement \n");
-
+        $$ = (struct while_statement_t*) malloc(sizeof(struct while_statement_t));
+        $$->e = $2;
+        $$->s = $4;
 	}
  ;
 
 if_statement : IF boolean_expression THEN statement ELSE statement
 	{
 	printf("if_statement : IF boolean_expression THEN statement ELSE statement \n");
-
+        $$ = (struct if_statement_t*) malloc(sizeof(struct if_statement_t));
+        $$->e = $2;
+        $$->s1 = $4;
+        $$->s2 = $6;
 	}
  ;
 
 assignment_statement : variable_access ASSIGNMENT expression
 	{
 	printf("assignment_statement : variable_access ASSIGNMENT expression \n");
-
+        $$ = (struct assignment_statement_t*) malloc(sizeof(struct assignment_statement_t));
+        $$->va = $1;
+        $$->e = $3;
+        $$->oe = NULL;
 	}
  | variable_access ASSIGNMENT object_instantiation
 	{
 	printf("assignment_statement : variable_access ASSIGNMENT object_instantiation \n");
-
+        $$ = (struct assignment_statement_t*) malloc(sizeof(struct assignment_statement_t));
+        $$->va = $1;
+        $$->e = NULL;
+        $$->oe = $3;
 	}
  ;
 
 object_instantiation: NEW identifier
 	{
 	printf("object_instantiation: NEW identifier \n");
-
+        $$ = (struct object_instantiation_t*) malloc(sizeof(struct object_instantiation_t));
+        $$->id = $2;
+        $$->apl = NULL;
 	}
  | NEW identifier params
 	{
 	printf("object_instantiation: NEW identifier params \n");
-
+        $$ = (struct object_instantiation_t*) malloc(sizeof(struct object_instantiation_t));
+        $$->id = $2;
+        $$->apl = $3;
 	}
 ;
 
 print_statement : PRINT variable_access
         {
 	printf("print_statement : PRINT variable_access \n");
-
+        $$ = (struct print_statement_t*) malloc(sizeof(struct print_statement_t));
+        $$->va = $2;
         }
 ;
 
 variable_access : identifier
 	{
 	printf("variable_access : identifier \n");
+        $$ = (struct variable_access_t*) malloc(sizeof(struct variable_access_t));
+        $$->type = VARIABLE_ACCESS_T_IDENTIFIER;
+        $$->data.id = $1;
+        // $$->recordname = ?
+        // $$->expr = ?
 
 	}
  | indexed_variable
 	{
 	printf("variable_access : indexed_variable \n");
+        $$ = (struct variable_access_t*) malloc(sizeof(struct variable_access_t));
+        $$->type = VARIABLE_ACCESS_T_INDEXED_VARIABLE;
+        $$->data.iv = $1;
 
+        // $$->recordname = ?
+        // $$->expr = ?
 	}
  | attribute_designator
 	{
 	printf("variable_access : attribute_designator \n");
+        $$ = (struct variable_access_t*) malloc(sizeof(struct variable_access_t));
+        $$->type = VARIABLE_ACCESS_T_ATTRIBUTE_DESIGNATOR;
+        $$->data.ad = $1;
 
+        // $$->recordname = ?
+        // $$->expr = ?
 	}
  | method_designator
 	{
 	printf("variable_access : method_designator \n");
+        $$ = (struct variable_access_t*) malloc(sizeof(struct variable_access_t));
+        $$->type = VARIABLE_ACCESS_T_METHOD_DESIGNATOR;
+        $$->data.md = $1;
 
+        // $$->recordname = ?
+        // $$->expr = ?
 	}
  ;
 
