@@ -9,6 +9,9 @@
 #include "symtab.h"
 #include "shared.h"
 
+#define SYMBOL_VARIABLE 1
+#define SYMBOL_FUNCTION 2
+
 struct ht_item_t {
     char *key;
     void *value;
@@ -73,6 +76,7 @@ int insert_item(struct hash_table_t *hashtable, char *key, void *value, int valu
     if (get_hashtable_item(hashtable, key) == NULL) {
         // value already exists
         assert(!"Hash table already contains value for key, no mechanism implemented to handle this scenario.");
+        return -1;
     }
     
     new_item = (struct ht_item_t*) malloc(sizeof(struct ht_item_t));
@@ -82,6 +86,7 @@ int insert_item(struct hash_table_t *hashtable, char *key, void *value, int valu
     
     new_item->next = hashtable->table[hashed_key];
     hashtable->table[hashed_key] = new_item;
+    return 0;
 }
 
 /* ------------------------------------------------------------
