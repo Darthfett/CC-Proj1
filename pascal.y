@@ -150,6 +150,7 @@ program : program_heading semicolon class_list DOT
 
 program_heading : PROGRAM identifier
 	{
+	// TODO make sure that this identifier is checked against list of identifiers
 	printf("program_heading : PROGRAM identifier \n");
 	$$ = (struct program_heading_t *) malloc(sizeof(struct program_heading_t));
 	$$->id = $2;
@@ -270,7 +271,7 @@ array_type : ARRAY LBRAC range RBRAC OF type_denoter
 
 range : unsigned_integer DOTDOT unsigned_integer
 	{
-	printf("range : unsigned_integer DOTDOT unsigned_integer \n");
+	printf("range : unsigned_integer DOTDOT unsigned_integer\nValue1 = %i\nValue2 = %i\n",$1->ui,$3->ui);
 	$$ = (struct range_t*) malloc(sizeof(struct range_t));
 	$$->min = $1;
 	$$->max = $3;
@@ -723,7 +724,7 @@ primary : variable_access
 	}
  | NOT primary
 	{
-	printf(primary :  | NOT primary\n");
+	printf("primary :  | NOT primary\n");
 
 	}
  ;
@@ -741,8 +742,9 @@ unsigned_number : unsigned_integer
 
 unsigned_integer : DIGSEQ
 	{
-	printf("unsigned_integer : DIGSEQ\n");
-
+	printf("unsigned_integer : DIGSEQ\nval = %s\n",yytext);
+	$$ = (struct unsigned_number_t*) malloc (sizeof(struct unsigned_number_t));
+	$$->ui = atoi(yytext);
 	}
  ;
 
@@ -826,7 +828,7 @@ relop : EQUAL
 
 identifier : IDENTIFIER
 	{
-	printf("identifier : IDENTIFIER\n");
+	printf("identifier : IDENTIFIER\nid = %s\n",yytext);
 	$$ = (char*) malloc((strlen(yytext) + 1));
 	strcpy($$, yytext);
 	}
