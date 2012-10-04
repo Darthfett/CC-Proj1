@@ -12,8 +12,9 @@
 #include "shared.h"
 #include "rulefuncs.h"
 #include "usrdef.h"
+#include <assert.h>
 
-  struct myText text;
+  // struct myText text;
   int yylex(void);
   void yyerror(const char *error);
 
@@ -137,30 +138,28 @@
 
 program : program_heading semicolon class_list DOT
 	{
-
-	printf("program : program_heading semicolon class_list DOT \n");
 	
+	printf("program : program_heading semicolon class_list DOT \n");
+	$$ = (struct program_t*) malloc(sizeof(struct program_t));
+
 	program = $$;
 	$$->ph = $1;
 	$$->cl = $3;
-
 	}
  ;
 
 program_heading : PROGRAM identifier
 	{
-	yylval.ph->id = yylval.id;
+	printf("program_heading : PROGRAM identifier \n");
 	$$ = (struct program_heading_t *) malloc(sizeof(struct program_heading_t));
 	$$->id = $2;
-	printf("my text = %s\n\n",text.id);
-	printf("program_heading : PROGRAM identifier \n");
-	//$$ = $2;
 	}
  | PROGRAM identifier LPAREN identifier_list RPAREN
 	{
-	printf("my text = %s\n\n",text.id);
+	// printf("my text = %s\n\n",text.id);
 	printf("PROGRAM identifier LPAREN identifier_list RPAREN \n");
 
+	$$ = (struct program_heading_t *) malloc(sizeof(struct program_heading_t));
 	$$->id = $2;
 	$$->il = $4;
 	}
@@ -180,6 +179,7 @@ identifier_list : identifier_list comma identifier
  | identifier
         {
 	printf("identifier_list : identifier \n");
+	$$ = (struct identifier_list_t*) malloc(sizeof(struct identifier_list_t));
 	//$$->next = NULL;  //OR just leave blank?
 	//$$->id = $1;
 	$$->next = NULL;
@@ -187,24 +187,19 @@ identifier_list : identifier_list comma identifier
         }
  ;
 
-class_list: class_list class_identification PBEGIN class_block END
+class_list : class_list class_identification PBEGIN class_block END
 	{
-	printf("class_list: class_list class_identification PBEGIN class_block END \n");
-	// ?
-
-	// $$->next = $1 
-	// 	OR 
-	// $1->next = $$
-
-	//$$->ci = $2;
-	//$$->cb = $4;
+	printf("class_list : class_list class_identification PBEGIN class_block END \n");
+	$$ = (struct class_list_t*) malloc(sizeof(struct class_list_t));
+	
+	$$->next = $1;
+	$$->ci = $2;
+	$$->cb = $4;
 	}
  | class_identification PBEGIN class_block END
 	{
-	printf("class_list: class_identification PBEGIN class_block END \n");
-	// $$->next = NULL  OR just leave blank?
-	//$$->ci = $1;
-	//$$->cb = $3;
+	printf("class_list : class_identification PBEGIN class_block END \n");
+	$$ = (struct class_list_t*) malloc(sizeof(struct class_list_t));
 
 	$$->next = NULL;
 	$$->ci = $1;
@@ -215,23 +210,27 @@ class_list: class_list class_identification PBEGIN class_block END
 class_identification : CLASS identifier
 	{
 	printf("class_identification : CLASS identifier \n");
-	//$$->id = $2;
-	//$$->extend = NULL;
-	//$$->line_number = line_number;
+
+	$$ = (struct class_identification_t*) malloc(sizeof(struct class_identification_t));
+	$$->id = $2;
+	$$->extend = NULL;
+	$$->line_number = line_number;
 	}
 | CLASS identifier EXTENDS identifier
 	{
 	printf("class_identification : CLASS identifier EXTENDS identifier \n");
+
+	$$ = (struct class_identification_t*) malloc(sizeof(struct class_identification_t));
 	$$->id = $2;
 	$$->extend = $4;
+	$$->line_number = line_number;
 	}
 ;
 
-class_block:
- variable_declaration_part
- func_declaration_list
+class_block : variable_declaration_part func_declaration_list
 	{
-	printf("class_block:variable_declaration_part func_declaration_list \n");
+	printf("class_block : variable_declaration_part func_declaration_list \n");
+	$$ = (struct class_block_t*) malloc(sizeof(struct class_block_t));
 
 	$$->vdl = $1;
 	$$->fdl = $2;
@@ -260,6 +259,7 @@ type_denoter : array_type
 array_type : ARRAY LBRAC range RBRAC OF type_denoter
 	{
 	printf("array_type : ARRAY LBRAC range RBRAC OF type_denoter \n");
+	$$ = (struct array_type_t*) malloc(sizeof(struct array_type_t));
 	$$->r = $3;
 	$$->td = $6;
 	}
@@ -268,6 +268,7 @@ array_type : ARRAY LBRAC range RBRAC OF type_denoter
 range : unsigned_integer DOTDOT unsigned_integer
 	{
 	printf("range : unsigned_integer DOTDOT unsigned_integer \n");
+	$$ = (struct range_t*) malloc(sizeof(struct range_t));
 	$$->min = $1;
 	$$->max = $3;
 	// TODO: verify min <= max ?
@@ -320,6 +321,7 @@ variable_declaration : identifier_list COLON type_denoter
 func_declaration_list : func_declaration_list semicolon function_declaration
 	{
 	printf("func_declaration_list : func_declaration_list semicolon function_declaration \n");
+	$$ = (struct func_declaration_list_t*) malloc(sizeof(struct func_declaration_list_t));
 	// $$->next = ?
 	$$->next = $1;
 	$$->fd = $3;
@@ -327,6 +329,7 @@ func_declaration_list : func_declaration_list semicolon function_declaration
  | function_declaration
 	{
 	printf("func_declaration_list : function_declaration \n");
+	$$ = (struct func_declaration_list_t*) malloc(sizeof(struct func_declaration_list_t));
 	// $$->next = ?
 	$$->next = NULL;
 	$$->fd = $1;
@@ -334,8 +337,7 @@ func_declaration_list : func_declaration_list semicolon function_declaration
  |
 	{
 	printf("func_declaration_list :  \n");
-	// $$->next = ?
-	// $$->fd = ?
+	$$ = (struct func_declaration_list_t*) malloc(sizeof(struct func_declaration_list_t));
 
 	$$->next = NULL;
 	$$->fd = NULL;
@@ -345,22 +347,17 @@ func_declaration_list : func_declaration_list semicolon function_declaration
 formal_parameter_list : LPAREN formal_parameter_section_list RPAREN 
 	{
 	printf("formal_parameter_list : LPAREN formal_parameter_section_list RPAREN  \n");
-	// ?
-	// ?
-	//printf(typeof($$) + "\n");
 	}
 ;
 formal_parameter_section_list : formal_parameter_section_list semicolon formal_parameter_section
 	{
 	printf("formal_parameter_section_list : formal_parameter_section_list semicolon formal_parameter_section \n");
-	// $$->next = ?
 	$$->next = $1;
 	$$->fps = $3;
 	}
  | formal_parameter_section
 	{
 	printf("formal_parameter_section_list : formal_parameter_section \n");
-	// $$->next = ?
 	$$->next = NULL;
 	$$->fps = $1;
 	}
@@ -799,7 +796,8 @@ relop : EQUAL
 
 identifier : IDENTIFIER
 	{
-	return yytext;
+	$$ = (char*) malloc((strlen(yytext) + 1));
+	strcpy($$, yytext);
 	}
  ;
 
