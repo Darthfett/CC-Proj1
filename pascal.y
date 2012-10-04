@@ -169,7 +169,9 @@ identifier_list : identifier_list comma identifier
         {
 	printf("identifier_list : identifier_list comma identifier \n%s",yytext);
 	// ?
-
+	$$ = (struct identifier_list_t*) malloc(sizeof(struct identifier_list_t));
+	$$->next = $1;
+	$$->id = $3;
 	//$$->next = $1; 
 	// 	OR 
 	// $1->next = $$
@@ -251,6 +253,7 @@ type_denoter : array_type
 	}
  | identifier
 	{
+	
 	printf("type_denoter : identifier \n");
 	// $$->type = ?;
 	}
@@ -688,43 +691,57 @@ sign : PLUS
 
 factor : sign factor
 	{
+	printf("factor : sign factor\n");
 
 	}
  | primary 
 	{
+	printf("factor : primary\n");
 
 	}
  ;
 
 primary : variable_access
 	{
+	printf("primary : variable_access\n");
 
 	}
  | unsigned_constant
 	{
+	printf("primary : | unsigned_constant\n");
 
 	}
  | function_designator
 	{
+	printf("primary : | function_designator\n");
 
 	}
  | LPAREN expression RPAREN
 	{
+	printf("primary : | LPAREN expression RPAREN\n");
 
 	}
  | NOT primary
 	{
+	printf(primary :  | NOT primary\n");
 
 	}
  ;
 
 unsigned_constant : unsigned_number
+	{
+	printf("unsigned_constant : unsigned_number\n");
+	}
  ;
 
-unsigned_number : unsigned_integer ;
+unsigned_number : unsigned_integer 
+{
+	printf("unsigned_number : unsigned_integer\n");
+};
 
 unsigned_integer : DIGSEQ
 	{
+	printf("unsigned_integer : DIGSEQ\n");
 
 	}
  ;
@@ -732,70 +749,84 @@ unsigned_integer : DIGSEQ
 /* functions with no params will be handled by plain identifier */
 function_designator : identifier params
 	{
-
+	printf("function_designator : identifier params\n");
 	}
  ;
 
 addop: PLUS
 	{
+	printf("addop: PLUS\n");
 
 	}
  | MINUS
 	{
+	printf("addop: | MINUS\n");
 
 	}
  | OR
 	{
+	printf("addop: | OR\n");
 
 	}
  ;
 
 mulop : STAR
 	{
+	printf("mulop : STAR\n");
 
 	}
  | SLASH
 	{
+	printf("mulop :  | SLASH\n");
 
 	}
  | MOD
 	{
+	printf("mulop :  | MOD\n");
 
 	}
  | AND
 	{
+	printf("mulop :  | AND\n");
 
 	}
  ;
 
 relop : EQUAL
 	{
+	printf("relop : EQUAL\n");
 
 	}
  | NOTEQUAL
 	{
+	printf("relop : | NOTEQUAL\n");
 
 	}
  | LT
 	{
+	printf("relop : | LT\n");
 
 	}
  | GT
 	{
+	printf("relop : | GT\n");
 
 	}
  | LE
 	{
+	printf("relop : | LE\n");
 
 	}
  | GE
 	{
+	printf("relop :  | GE\n");
 
 	}
  ;
 
 identifier : IDENTIFIER
 	{
+	printf("identifier : IDENTIFIER\n");
 	$$ = (char*) malloc((strlen(yytext) + 1));
 	strcpy($$, yytext);
 	}
@@ -803,6 +834,7 @@ identifier : IDENTIFIER
 
 semicolon : SEMICOLON
 	{
+	printf("semicolon : SEMICOLON\n");
 
 	}
  ;
@@ -810,6 +842,7 @@ semicolon : SEMICOLON
 comma : COMMA
 	{
 
+	printf("comma : COMMA\n");
 	}
  ;
 

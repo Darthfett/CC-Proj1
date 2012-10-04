@@ -10,17 +10,10 @@
 #include "shared.h"
 
 
-struct ht_item_t {
-    char *key;
-    void *value;
-    int value_type;
-    struct ht_item_t *next;
-};
+#define SYMBOL_VARIABLE 1
+#define SYMBOL_FUNCTION 2
 
-struct hash_table_t {
-    int size;
-    struct ht_item_t **table;
-};
+
 
 struct hash_table_t* new_hash_table(int size)
 {
@@ -104,10 +97,6 @@ void symtab_init()
 
 }
 
-void addID(char* id, char* type)
-{
-	// TODO this is used for trying to add a new id and type to the scope
-}
 
 /* ------------------------------------------------------------
  * Prints the contents of the symbol table
