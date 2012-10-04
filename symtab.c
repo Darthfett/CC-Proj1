@@ -131,7 +131,22 @@ void symtab_init()
  */
 void symtab_print(int numOfTabs)
 {
+    struct hash_table_t *global_table;
+    // Not sure what numOfTabs argument is -- print every item instead.
 
+    printf("{\n");
+
+    for (int i = 0; i < global_table->size; i++) {
+        struct ht_node_t *node = global_table->table[i];
+        while (node != NULL) {
+            printf("\"%s\": ", node->key);
+            // TODO - Update value to be actual value rather than type.
+            printf("%d\n", node->value->value_type);
+        }
+        node = node->next;
+    }
+
+    printf("}\n");
 
 }
 
