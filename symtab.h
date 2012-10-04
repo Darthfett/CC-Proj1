@@ -43,7 +43,7 @@ struct hash_table_t* new_hash_table(int size);
 int hash(struct hash_table_t *hashtable, char *key);
 struct ht_item_t* get_hashtable_item(struct hash_table_t *hashtable, char *key);
 int insert_item(struct hash_table_t *hashtable, char *key, struct ht_item_t *value);
-
+void* findElement(char* id, char* scope);
 struct ht_item_t* remote_item(struct hash_table_t *hashtable, char *key);
 
 #endif

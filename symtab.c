@@ -120,6 +120,7 @@ struct ht_item_t *remove_item(struct hash_table_t* table, char *key)
  */
 void symtab_init()
 {
+	// TODO we need to define a gloabal hash table to use for holding all the tag IDs and types.
 
 
 }
@@ -133,5 +134,58 @@ void symtab_print(int numOfTabs)
 {
 
 
+}
+
+void* findElement(char* id, char* scope)
+{
+	void *rval = NULL;
+	do
+	{
+		if ( id == NULL ) {
+			// we cannot find a null id
+			break;
+		}
+		if ( scope == NULL ) {
+			// we will assume that we should look in the current scope
+			scope = current_scope;
+		}
+		void* T = get_hashtable_item(&global_table,scope);
+
+		// check that we got a valid value back
+		if ( T == NULL ) {
+			// Could not find hash table for the given scope
+			break;
+		}
+		// TODO get the next hash table for the scope that was returned.
+		struct hash_table_t *t_scope = T;
+		rval = get_hashtable_item(t_scope,id);
+
+	} while (0);
+
+	return rval;
+}
+int add_element(void *value, char* id, char* scope)
+{
+	// The default return value is 0
+	int rval = 0;
+	do {
+		if ( id == NULL || value == NULL ) {
+			// we cannot add a new node into the hash table if it is null
+			break;
+		}
+		if ( scope == NULL ) {
+			// we will assume that we should look in the current scope
+			scope = current_scope;
+		}
+		void* T = get_hashtable_item(&global_table,scope);
+
+		// check that we got a valid value back
+		if ( T == NULL ) {
+			// we do not have a table defined for this scope yet so we want to
+			// create that table now.
+
+		}
+
+	} while (0);
 }
 
