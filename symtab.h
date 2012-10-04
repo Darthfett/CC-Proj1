@@ -36,6 +36,8 @@ struct hash_table_t {
     int size;
     struct ht_node_t **table;
 };
+char *current_scope;
+struct hash_table_t global_table;
 
 void symtab_init();
 void symtab_print(int numOfTabs);
