@@ -44,7 +44,7 @@ int hash(struct hash_table_t *hashtable, char *key)
     return makekey(key, hashtable->size);
 }
 
-ht_value_t* get_hashtable_item(struct hash_table_t *hashtable, char *key)
+struct ht_item_t* get_hashtable_item(struct hash_table_t *hashtable, char *key)
 {
     struct ht_node_t *node;
     int hashed_key = hash(hashtable, key);
@@ -58,7 +58,7 @@ ht_value_t* get_hashtable_item(struct hash_table_t *hashtable, char *key)
     return NULL;
 }
 
-int insert_item(struct hash_table_t *hashtable, char *key, ht_item_t *value, int value_type)
+int insert_item(struct hash_table_t *hashtable, char *key, struct ht_item_t *value, int value_type)
 {
 	// The default return value is 0 not found.
 	int rval = 0;
@@ -77,7 +77,6 @@ int insert_item(struct hash_table_t *hashtable, char *key, ht_item_t *value, int
 		new_node = (struct ht_node_t*) malloc(sizeof(struct ht_node_t));
 		strcpy(new_node->key, key);
 		new_node->value = value;
-		new_node->value_type = value_type;
 
 		new_node->next = hashtable->table[hashed_key];
 		hashtable->table[hashed_key] = new_node;
