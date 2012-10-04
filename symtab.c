@@ -9,6 +9,7 @@
 #include "symtab.h"
 #include "shared.h"
 
+
 struct ht_item_t {
     char *key;
     void *value;
@@ -66,22 +67,31 @@ void* get_hashtable_item(struct hash_table_t *hashtable, char *key)
 
 int insert_item(struct hash_table_t *hashtable, char *key, void *value, int value_type)
 {
-    // struct ht_item_t *item; // Necessary for handling of 'value already exists'
-    struct ht_item_t *new_item;
-    int hashed_key = hash(hashtable, key);
-    
-    if (get_hashtable_item(hashtable, key) == NULL) {
-        // value already exists
-        assert(!"Hash table already contains value for key, no mechanism implemented to handle this scenario.");
-    }
-    
-    new_item = (struct ht_item_t*) malloc(sizeof(struct ht_item_t));
-    strcpy(new_item->key, key);
-    new_item->value = value;
-    new_item->value_type = value_type;
-    
-    new_item->next = hashtable->table[hashed_key];
-    hashtable->table[hashed_key] = new_item;
+	// The default return value is 0 not found.
+	int rval = 0;
+	do
+	{
+		// struct ht_item_t *item; // Necessary for handling of 'value already exists'
+		struct ht_item_t *new_item;
+		int hashed_key = hash(hashtable, key);
+
+		if (get_hashtable_item(hashtable, key) == NULL) {
+			// value already exists
+			assert(!"Hash table already contains value for key, no mechanism implemented to handle this scenario.");
+			break; // we do not want to add this ke in because it already exists.
+		}
+
+		new_item = (struct ht_item_t*) malloc(sizeof(struct ht_item_t));
+		strcpy(new_item->key, key);
+		new_item->value = value;
+		new_item->value_type = value_type;
+
+		new_item->next = hashtable->table[hashed_key];
+		hashtable->table[hashed_key] = new_item;
+		// we have added the new tag into the structure so we are good
+		rval = 1;
+	} while (0);
+	return rval;
 }
 
 /* ------------------------------------------------------------
@@ -94,7 +104,10 @@ void symtab_init()
 
 }
 
-
+void addID(char* id, char* type)
+{
+	// TODO this is used for trying to add a new id and type to the scope
+}
 
 /* ------------------------------------------------------------
  * Prints the contents of the symbol table
