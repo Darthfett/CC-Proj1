@@ -23,6 +23,22 @@
 
 void symtab_init();
 void symtab_print(int numOfTabs);
+struct hash_table_t* new_hash_table(int size);
+int hash(struct hash_table_t *hashtable, char *key);
+void* get_hashtable_item(struct hash_table_t *hashtable, char *key);
+int insert_item(struct hash_table_t *hashtable, char *key, void *value, int value_type);
+
+struct ht_item_t {
+    char *key;
+    void *value;
+    int value_type;
+    struct ht_item_t *next;
+};
+
+struct hash_table_t {
+    int size;
+    struct ht_item_t **table;
+};
 
 
 
