@@ -842,39 +842,56 @@ factor : sign factor
 primary : variable_access
 	{
 	printf("primary : variable_access\n");
-
+        $$ = (struct primary_t*) malloc(sizeof(struct primary_t));
+        $$->type = PRIMARY_T_VARIABLE_ACCESS;
+        $$->data.va = $1;
+        $$->expr = $1->expr;
 	}
  | unsigned_constant
 	{
 	printf("primary : | unsigned_constant\n");
-
+        $$ = (struct primary_t*) malloc(sizeof(struct primary_t));
+        $$->type = PRIMARY_T_UNSIGNED_CONSTANT;
+        $$->data.un = $1;
+        $$->expr = $1->expr;
 	}
  | function_designator
 	{
 	printf("primary : | function_designator\n");
-
+        $$ = (struct primary_t*) malloc(sizeof(struct primary_t));
+        $$->type = PRIMARY_T_FUNCTION_DESIGNATOR;
+        $$->data.fd = $1;
+        $$->expr = $1->expr;
 	}
  | LPAREN expression RPAREN
 	{
 	printf("primary : | LPAREN expression RPAREN\n");
-
+        $$ = (struct primary_t*) malloc(sizeof(struct primary_t));
+        $$->type = PRIMARY_T_EXPRESSION;
+        $$->data.e = $2;
+        $$->expr = $2->expr;
 	}
  | NOT primary
 	{
 	printf("primary :  | NOT primary\n");
-
+        $$ = (struct primary_t*) malloc(sizeof(struct primary_t));
+        $$->type = PRIMARY_T_PRIMARY;
+        $$->data.p.next = $2;
+        // TODO - $$->expr
 	}
  ;
 
 unsigned_constant : unsigned_number
 	{
 	printf("unsigned_constant : unsigned_number\n");
+        $$ = $1;
 	}
  ;
 
 unsigned_number : unsigned_integer 
 {
 	printf("unsigned_number : unsigned_integer\n");
+        $$ = $1;
 };
 
 unsigned_integer : DIGSEQ
@@ -889,6 +906,9 @@ unsigned_integer : DIGSEQ
 function_designator : identifier params
 	{
 	printf("function_designator : identifier params\n");
+        $$ = (struct function_designator_t*) malloc(sizeof(struct function_designator_t));
+        $$->id = $1;
+        $$->apl = $2;
 	}
  ;
 
