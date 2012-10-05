@@ -29,7 +29,7 @@
 #define	 HT_ERROR  0x0;  // Could not add this id into the tables.
 
 enum ht_types {
-	scope_table, array
+	scope_table, array,variable
 };
 
 struct ht_item_t {
@@ -74,7 +74,7 @@ void symtab_print(int numOfTabs);
 struct hash_table_t* new_hash_table(int size);
 int hash(struct hash_table_t *hashtable, char *key);
 struct ht_item_t* get_hashtable_item(struct hash_table_t *hashtable, char *key);
-int insert_item(struct hash_table_t *hashtable, char *key, struct ht_item_t *value);
+struct ht_item_t* insert_item(struct hash_table_t *hashtable, char *key, struct ht_item_t *value);
 struct ht_item_t* findElement(char* id, char* scope);
 struct ht_item_t* remove_item(struct hash_table_t *hashtable, char *key);
 int add_element(struct ht_item_t *value, char* id, char* scope);

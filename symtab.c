@@ -134,13 +134,13 @@ void symtab_print(int numOfTabs)
 {
     int i;
     // Not sure what numOfTabs argument is -- print every item instead.
-    if ( global_table == NULL ) {
+    if ( global_table.table == NULL ) {
     	printf("global_table is null\n");
     }
     printf("{\n");
 
-    for (i = 0; i < global_table->size; i++) {
-        struct ht_node_t *node = global_table->table[i];
+    for (i = 0; i < global_table.size; i++) {
+        struct ht_node_t *node = global_table.table[i];
         while (node != NULL) {
             printf("\"%s\": ", node->key);
             // TODO - Update value to be actual value rather than type.
@@ -247,7 +247,7 @@ struct ht_item_t * get_or_create_scope(char* scope, char* parent)
 
 			r_scope->value = scope_item;
 			r_scope->value_type = scope_table;
-			if ( !isert_item(&global_table,scope,r_scope) ) {
+			if ( insert_item(&global_table,scope,r_scope) ) {
 				assert(!"Failed to add new scope to global_table");
 			}
 		} else {
@@ -257,7 +257,7 @@ struct ht_item_t * get_or_create_scope(char* scope, char* parent)
 	} while (0);
 	return r_scope;
 }
-struct ht_item_t * findInParentScope(struct ht_scope_item_t scope_item, char *id)
+struct ht_item_t * findInParentScope(struct ht_scope_item_t *scope_item, char *id)
 {
 	// The default return value is NULL
 	struct ht_item_t * rval = NULL;
@@ -322,6 +322,108 @@ int add_element(struct ht_item_t *value, char* id, char* scope)
 		} // else
 		// This element is already defined by this scope so we do not add it and we
 		// return the default value of error.
+
+	} while (0);
+	return rval;
+}
+// This method is called to change the global scope variable so that we
+// are pointing to the correct scopes.
+struct ht_scope_item_t* moveDownToNewScope(char* scope)
+{
+	// The default return value is NULL if this scope has already been
+	// defined.
+	struct ht_scope_item_t* rval = NULL;
+	if ( get_hashtable_item(&global_table,scope) == NULL ) {
+		struct ht_item_t * t = get_or_create_scope(scope,current_scope);
+		if ( t != NULL && t->value_type == scope_table ) {
+			rval = t->value;
+		}
+	}
+	return rval;
+}
+char* getType(struct ht_item_t* element)
+{
+	char *type = NULL;
+	switch ( element->value_type ) {
+	case array:
+	{
+		struct ht_array_item_t * a = element->value;
+		type = a->type;
+	}
+	break;
+	case variable:
+	{
+		type = element->value;
+	}
+	break;
+	case scope_table:
+	{
+		// this is the return type if we are a method
+		struct ht_scope_item_t *s = element->value;
+		type = s->return_type;
+	}
+	break;
+	default:
+		break;
+	}
+	return type;
+}
+
+// This method checks if the two IDs have the same type and returns that
+// type or NULL if they are not the same.
+char* checkType(char* id1,char *scope1,char*scope2, char* id2)
+{
+	// default return value is NULL
+	char * rval = NULL;
+	char * type1 = NULL;
+	char * type2 = NULL;
+	struct ht_item_t * t1;
+	struct ht_item_t * t2;
+	struct ht_scope_item_t* s1;
+	struct ht_scope_item_t* s2;
+
+	if ( scope1 == NULL ) {
+		scope1 = current_scope;
+	}
+	if ( scope2 == NULL ) {
+		scope2 = current_scope;
+	}
+
+	do {
+		t1 = get_hashtable_item(&global_table,scope1);
+		t2 = get_hashtable_item(&global_table,scope2);
+		if ( t1 == NULL || t2 == NULL ) {
+			printf("checkType(): unknown scope used: scope1 = %s, scope2 = %s ",scope1,scope2);
+			break;
+		}
+		if ( t1->value_type != scope_table || t2->value_type != scope_table ) {
+			// Structure problem we should not have this happen.
+			assert(!"checkType(): Hash Table is not structured correctly");
+			break;
+		}
+		s1 = t1->value;
+		s2 = t1->value;
+
+		if ( s1 == NULL || s2 == NULL ) {
+			// Structure problem we should not have this happen.
+			assert(!"checkType(): scope table was lost");
+			break;
+		}
+		// search in all the parent scopes as well to find the elements for these ids
+		t1 = findInParentScope(s1,id1);
+		t2 = findInParentScope(s2,id2);
+
+		if ( t1 == NULL || t2 == NULL ) {
+			// we do not have this identifier yet so we cannot say they are the same
+			break;
+		}
+		type1 = getType(t1);
+		type2 = getType(t2);
+		if ( strcmp(type1,type2) == 0 ) {
+			// These are the same type Yeah!!!
+			rval = type1;
+		}
+
 
 	} while (0);
 	return rval;

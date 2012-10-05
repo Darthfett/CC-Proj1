@@ -661,7 +661,7 @@ index_expression_list : index_expression_list comma index_expression
 	{
 	printf("index_expression_list : index_expression \n");
         $$ = (struct index_expression_list_t*) malloc(sizeof(struct index_expression_list_t));
-        $$->e = $3;
+        $$->e = $1;
         $$->next = NULL;
         // $$->expr = ?;
 	}
@@ -755,7 +755,7 @@ expression : simple_expression
         $$->se1 = $1;
         $$->relop = 0;
         $$->se2 = NULL;
-        $$->expr = $1->expr 
+        $$->expr = $1->expr;
 	}
  | simple_expression relop simple_expression
 	{
