@@ -13,6 +13,7 @@
 #define SYMBOL_VARIABLE 1
 #define SYMBOL_FUNCTION 2
 
+void printTable(struct hash_table_t *table);
 
 
 struct hash_table_t* new_hash_table(int size)
@@ -58,33 +59,32 @@ struct ht_item_t* get_hashtable_item(struct hash_table_t *hashtable, char *key)
     return NULL;
 }
 
-int insert_item(struct hash_table_t *hashtable, char *key, struct ht_item_t *value)
+struct ht_item_t* insert_item(struct hash_table_t *hashtable, char *key, struct ht_item_t *value)
 {
-	// The default return value is 0 not found.
-	int rval = 0;
-	do
-	{
-		// struct ht_node_t *node; // Necessary for handling of 'value already exists'
-		struct ht_node_t *new_node;
-		int hashed_key = hash(hashtable, key);
+    // Insert a value into the hashtable.  If a value already exists for the given key, the old value is returned, and the user must take responsibility for freeing that memory.
+    struct ht_node_t *node;
+    int hashed_key = hash(hashtable, key);
+    struct ht_item_t *item = get_hashtable_item(hashtable, key);
+    if (item != NULL) {
+        // value already exists, overwrite value in table and return old value to user
+        for(node = hashtable->table[hashed_key]; node != NULL; node = node->next) {
+            if (strcmp(key, node->key) == 0) {
+                node->value = value;
+                return item;
+            }
+        }
+    }
 
-		if (get_hashtable_item(hashtable, key) == NULL) {
-			// value already exists
-			assert(!"Hash table already contains value for key, no mechanism implemented to handle this scenario.");
-			break; // we do not want to add this ke in because it already exists.
-		}
+    // Implicit else
 
-		new_node = (struct ht_node_t*) malloc(sizeof(struct ht_node_t));
-                new_node->key = (char*) malloc(strlen(key) + 1);
-		strcpy(new_node->key, key);
-		new_node->value = value;
+    node = (struct ht_node_t*) malloc(sizeof(struct ht_node_t));
+    node->key = (char*) malloc(strlen(key) + 1);
+    strcpy(node->key, key);
+    node->value = value;
 
-		new_node->next = hashtable->table[hashed_key];
-		hashtable->table[hashed_key] = new_node;
-		// we have added the new tag into the structure so we are good
-		rval = 1;
-	} while (0);
-	return rval;
+    node->next = hashtable->table[hashed_key];
+    hashtable->table[hashed_key] = node;
+    return NULL;
 }
 
 struct ht_item_t *remove_item(struct hash_table_t* table, char *key)
@@ -132,10 +132,11 @@ void symtab_init()
  */
 void symtab_print(int numOfTabs)
 {
-    struct hash_table_t *global_table;
     int i;
     // Not sure what numOfTabs argument is -- print every item instead.
-
+    if ( global_table == NULL ) {
+    	printf("global_table is null\n");
+    }
     printf("{\n");
 
     for (i = 0; i < global_table->size; i++) {
@@ -151,10 +152,32 @@ void symtab_print(int numOfTabs)
     printf("}\n");
 
 }
-
-void* findElement(char* id, char* scope)
+void printTable(struct hash_table_t *table)
 {
-	void *rval = NULL;
+
+	int i;
+	int size = table->size;
+	// Not sure what numOfTabs argument is -- print every item instead.
+
+	printf("{\n");
+
+	for (i = 0; i < size; i++) {
+		struct ht_node_t *node = table->table[i];
+		while (node != NULL) {
+			printf("\"%s\": ", node->key);
+			// TODO - Update value to be actual value rather than type.
+			printf("%d\n", node->value->value_type);
+		}
+		node = node->next;
+	}
+
+	printf("}\n");
+}
+struct ht_item_t * findElement(char* id, char* scope)
+{
+	struct ht_item_t *rval = NULL;
+	struct ht_scope_item_t *scope_item;
+	struct ht_item_t * T;
 	do
 	{
 		if ( id == NULL ) {
@@ -165,25 +188,97 @@ void* findElement(char* id, char* scope)
 			// we will assume that we should look in the current scope
 			scope = current_scope;
 		}
-		void* T = get_hashtable_item(&global_table,scope);
+		T = get_hashtable_item(&global_table,scope);
 
 		// check that we got a valid value back
 		if ( T == NULL ) {
 			// Could not find hash table for the given scope
 			break;
+		} else if ( T->value_type == scope_table ) {
+			scope_item = T->value;
+		} else {
+			// We are in trouble because we have found a table entry in the
+			// scope layer that is not a scope.
+			assert(!"Hash Table structure error: found a none scope_table element in top level\n");
 		}
 		// TODO get the next hash table for the scope that was returned.
-		struct hash_table_t *t_scope = T;
+		struct hash_table_t *t_scope = scope_item->table;
 		rval = get_hashtable_item(t_scope,id);
 
 	} while (0);
 
 	return rval;
 }
-int add_element(void *value, char* id, char* scope)
+struct ht_item_t * get_or_create_scope(char* scope, char* parent)
 {
-	// The default return value is 0
-	int rval = 0;
+	struct ht_item_t * r_scope = NULL;
+	struct ht_item_t * p_scope = NULL;
+	struct ht_scope_item_t *scope_item;
+	do {
+		if ( scope == NULL ) {
+			// we cannot create nor open a scope that has no value.
+			assert(!"Cannot open or create a NULL scope\n");
+			break;
+		}
+		struct ht_item_t * T = get_hashtable_item(&global_table,scope);
+
+		// check that we got a valid value back
+		if ( T == NULL ) {
+
+			// we do not have a table defined for this scope yet so we want to
+			// create that table now.
+			scope_item = malloc(sizeof(struct ht_scope_item_t));
+			CHECK_MEM_ERROR(scope_item);
+
+			scope_item->parent = NULL;
+			// find the parent scope if provided
+			if ( parent != NULL ) {
+				p_scope = get_hashtable_item(&global_table,parent);
+				if ( p_scope != NULL && p_scope->value_type == scope_table ) {
+					scope_item->parent = p_scope->value;
+				} // else the default value is already null
+			} // else the default value is already null
+			scope_item->return_type = NULL;
+			scope_item->table = new_hash_table(15); // we might want to make this number bigger
+
+			// create the hash table value for this scope
+			r_scope = malloc(sizeof(struct ht_item_t));
+			CHECK_MEM_ERROR(r_scope);
+
+			r_scope->value = scope_item;
+			r_scope->value_type = scope_table;
+			if ( !isert_item(&global_table,scope,r_scope) ) {
+				assert(!"Failed to add new scope to global_table");
+			}
+		} else {
+			// we found a valid scope element so we are good
+			r_scope = T;
+		}
+	} while (0);
+	return r_scope;
+}
+struct ht_item_t * findInParentScope(struct ht_scope_item_t scope_item, char *id)
+{
+	// The default return value is NULL
+	struct ht_item_t * rval = NULL;
+	while ( scope_item != NULL ) {
+		struct ht_item_t * element = get_hashtable_item(scope_item->table,id);
+		if ( element != NULL ) {
+			// we have found this tag in an ancestor scope so we should return
+			// this item
+			rval = element;
+			break;
+		} // else we move to the next parent scope untill we hit the Global scope
+		scope_item = scope_item->parent;
+	}
+	return rval;
+}
+
+int add_element(struct ht_item_t *value, char* id, char* scope)
+{
+	// The default return value is ERROR
+	int rval = HT_ERROR;
+	struct ht_scope_item_t *scope_item;
 	do {
 		if ( id == NULL || value == NULL ) {
 			// we cannot add a new node into the hash table if it is null
@@ -193,15 +288,42 @@ int add_element(void *value, char* id, char* scope)
 			// we will assume that we should look in the current scope
 			scope = current_scope;
 		}
-		void* T = get_hashtable_item(&global_table,scope);
+		struct ht_item_t * T = get_hashtable_item(&global_table,scope);
 
 		// check that we got a valid value back
 		if ( T == NULL ) {
-			// we do not have a table defined for this scope yet so we want to
-			// create that table now.
-
+			// We do not have this scope defined yet so that is an error
+			assert(!"Error Scope not defined yet");
+			break;
 		}
+		// make sure that we have found a scope element and not something else
+		if ( T->value_type != scope_table ) {
+			// we are in trouble!!! our hash table is not set up correctly
+			assert(!"Hash Table is not structured correctly");
+			break;
+		}
+		scope_item = T->value;
+
+		// check to see if this item is already delcared within this scope
+		struct ht_item_t * element = get_hashtable_item(scope_item->table,scope);
+		if ( element == NULL ) {
+			// yeah we can add this element into the hash table and all is well
+			insert_item(scope_item->table,id,value);
+			rval = HT_SUCCESS;
+
+			// Make sure that this element is not defined in a parent scope
+			if ( findInParentScope(scope_item->parent,id) != NULL ) {
+				// This variable is already declared in a larger scope
+				// this is either an error or a warning.
+				rval = HT_WARNING;
+			}
+
+			break;
+		} // else
+		// This element is already defined by this scope so we do not add it and we
+		// return the default value of error.
 
 	} while (0);
+	return rval;
 }
 
