@@ -58,33 +58,32 @@ struct ht_item_t* get_hashtable_item(struct hash_table_t *hashtable, char *key)
     return NULL;
 }
 
-int insert_item(struct hash_table_t *hashtable, char *key, struct ht_item_t *value)
+struct ht_item_t* insert_item(struct hash_table_t *hashtable, char *key, struct ht_item_t *value)
 {
-	// The default return value is 0 not found.
-	int rval = 0;
-	do
-	{
-		// struct ht_node_t *node; // Necessary for handling of 'value already exists'
-		struct ht_node_t *new_node;
-		int hashed_key = hash(hashtable, key);
+    // Insert a value into the hashtable.  If a value already exists for the given key, the old value is returned, and the user must take responsibility for freeing that memory.
+    struct ht_node_t *node;
+    int hashed_key = hash(hashtable, key);
+    struct ht_item_t *item = get_hashtable_item(hashtable, key);
+    if (item != NULL) {
+        // value already exists, overwrite value in table and return old value to user
+        for(node = hashtable->table[hashed_key]; node != NULL; node = node->next) {
+            if (strcmp(key, node->key) == 0) {
+                node->value = value;
+                return item;
+            }
+        }
+    }
 
-		if (get_hashtable_item(hashtable, key) == NULL) {
-			// value already exists
-			assert(!"Hash table already contains value for key, no mechanism implemented to handle this scenario.");
-			break; // we do not want to add this ke in because it already exists.
-		}
+    // Implicit else
 
-		new_node = (struct ht_node_t*) malloc(sizeof(struct ht_node_t));
-                new_node->key = (char*) malloc(strlen(key) + 1);
-		strcpy(new_node->key, key);
-		new_node->value = value;
+    node = (struct ht_node_t*) malloc(sizeof(struct ht_node_t));
+    node->key = (char*) malloc(strlen(key) + 1);
+    strcpy(node->key, key);
+    node->value = value;
 
-		new_node->next = hashtable->table[hashed_key];
-		hashtable->table[hashed_key] = new_node;
-		// we have added the new tag into the structure so we are good
-		rval = 1;
-	} while (0);
-	return rval;
+    node->next = hashtable->table[hashed_key];
+    hashtable->table[hashed_key] = node;
+    return NULL;
 }
 
 struct ht_item_t *remove_item(struct hash_table_t* table, char *key)
