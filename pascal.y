@@ -641,39 +641,52 @@ variable_access : identifier
 indexed_variable : variable_access LBRAC index_expression_list RBRAC
 	{
 	printf("indexed_variable : variable_access LBRAC index_expression_list RBRAC \n");
-
+        $$ = (struct indexed_variable_t*) malloc(sizeof(struct indexed_variable_t));
+        $$->va = $1;
+        $$->iel = $3;
+        // $$->expr = ?;
 	}
  ;
 
 index_expression_list : index_expression_list comma index_expression
 	{
 	printf("index_expression_list : index_expression_list comma index_expression \n");
-
+        $$ = (struct index_expression_list_t*) malloc(sizeof(struct index_expression_list_t));
+        $$->e = $3;
+        $$->next = $1;
+        // $$->expr = ?;
 	}
  | index_expression
 	{
 	printf("index_expression_list : index_expression \n");
-
+        $$ = (struct index_expression_list_t*) malloc(sizeof(struct index_expression_list_t));
+        $$->e = $3;
+        $$->next = NULL;
+        // $$->expr = ?;
 	}
  ;
 
 index_expression : expression
 	{
 	printf("index_expression : expression \n");
-
+        $$ = $1;
 	} ;
 
 attribute_designator : variable_access DOT identifier
 	{
 	printf("attribute_designator : variable_access DOT identifier \n");
-
+        $$ = (struct attribute_designator_t*) malloc(sizeof(struct attribute_designator_t));
+        $$->va = $1;
+        $$->id = $3;
 	}
 ;
 
 method_designator: variable_access DOT function_designator
 	{
 	printf("method_designator: variable_access DOT function_designator \n");
-
+        $$ = (struct method_designator_t*) malloc(sizeof(struct method_designator_t));
+        $$->va = $1;
+        $$->fd = $3;
 	}
  ;
 
@@ -681,78 +694,116 @@ method_designator: variable_access DOT function_designator
 params : LPAREN actual_parameter_list RPAREN 
 	{
 	printf("params : LPAREN actual_parameter_list RPAREN  \n");
-
+        $$ = (struct actual_parameter_list_t*) malloc(sizeof(struct actual_parameter_list_t));
+        $$->ap = NULL;
+        $$->next = $2;
 	}
  ;
 
 actual_parameter_list : actual_parameter_list comma actual_parameter
 	{
 	printf("actual_parameter_list : actual_parameter_list comma actual_parameter \n");
-
+        $$ = (struct actual_parameter_list_t*) malloc(sizeof(struct actual_parameter_list_t));
+        $$->ap = $3;
+        $$->next = $1;
 	}
  | actual_parameter 
 	{
 	printf("actual_parameter_list : actual_parameter \n");
-
+        $$->ap = $1;
+        $$->next = NULL;
 	}
  ;
 
 actual_parameter : expression
 	{
 	printf("actual_parameter : expression \n");
-
+        $$ = (struct actual_parameter_t*) malloc(sizeof(struct actual_parameter_t));
+        $$->e1 = $1;
+        $$->e2 = NULL;
+        $$->e3 = NULL;
 	}
  | expression COLON expression
 	{
 	printf("actual_parameter : expression COLON expression \n");
-
+        $$ = (struct actual_parameter_t*) malloc(sizeof(struct actual_parameter_t));
+        $$->e1 = $1;
+        $$->e2 = $3;
+        $$->e3 = NULL;
 	}
  | expression COLON expression COLON expression
 	{
 	printf("actual_parameter : expression COLON expression COLON expression \n");
-
+        $$ = (struct actual_parameter_t*) malloc(sizeof(struct actual_parameter_t));
+        $$->e1 = $1;
+        $$->e2 = $3;
+        $$->e3 = $5;
 	}
  ;
 
 boolean_expression : expression
 	{
 	printf("boolean_expression : expression \n");
-
+        $$ = $1;
 	} ;
 
 expression : simple_expression
 	{
 	printf("expression : simple_expression \n");
-
+        $$ = (struct expression_t*) malloc(sizeof(struct expression_t));
+        $$->se1 = $1;
+        $$->relop = 0;
+        $$->se2 = NULL;
+        $$->expr = $1->expr 
 	}
  | simple_expression relop simple_expression
 	{
 	printf("expression : simple_expression relop simple_expression \n");
-
+        $$ = (struct expression_t*) malloc(sizeof(struct expression_t));
+        $$->se1 = $1;
+        $$->relop = $2;
+        $$->se2 = $3;
+        // TODO - compute value and type of $$->expr
 	}
  ;
 
 simple_expression : term
 	{
 	printf("simple_expression : term \n");
-
+        $$ = (struct simple_expression_t*) malloc(sizeof(struct simple_expression_t));
+        $$->t = $1;
+        $$->addop = 0;
+        $$->expr = $1->expr;
+        $$->next = NULL;
 	}
  | simple_expression addop term
 	{
 	printf("simple_expression : simple_expression addop term \n");
-
+        $$ = (struct simple_expression_t*) malloc(sizeof(struct simple_expression_t));
+        $$->t = $3;
+        $$->addop = $2;
+        // TODO - compute value and type of $$->expr
+        $$->next = $1;
 	}
  ;
 
 term : factor
 	{
 	printf("term : factor \n");
-
+        $$ = (struct term_t*) malloc(sizeof(struct term_t));
+        $$->f = $1;
+        $$->mulop = 0;
+        $$->expr = $1->expr;
+        $$->next = NULL;
 	}
  | term mulop factor
 	{
 	printf("term : term mulop factor \n");
-
+        $$ = (struct term_t*) malloc(sizeof(struct term_t));
+        $$->f = $3;
+        $$->mulop = $2;
+        // TODO - compute value and type of $$->expr
+        $$->next = $1;
 	}
  ;
 
@@ -771,11 +822,19 @@ sign : PLUS
 factor : sign factor
 	{
 	printf("factor : sign factor\n");
-
+        $$ = (struct factor_t*) malloc(sizeof(struct factor_t));
+        $$->type = FACTOR_T_SIGNFACTOR;
+        $$->data.f.sign = $1;
+        $$->data.f.next = $2;
+        // TODO - $$->expr
 	}
  | primary 
 	{
 	printf("factor : primary\n");
+        $$ = (struct factor_t*) malloc(sizeof(struct factor_t));
+        $$->type = FACTOR_T_PRIMARY;
+        $$->data.p = $1;
+        // TODO - $$->expr
 
 	}
  ;
