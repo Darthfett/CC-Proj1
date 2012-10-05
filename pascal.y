@@ -150,6 +150,7 @@ program : program_heading semicolon class_list DOT
 program_heading : PROGRAM identifier
 	{
 	// TODO make sure that this identifier is checked against list of identifiers
+	// Change our scope to be within this program
 	printf("program_heading : PROGRAM identifier \n");
 	$$ = (struct program_heading_t *) malloc(sizeof(struct program_heading_t));
 	$$->id = $2;
