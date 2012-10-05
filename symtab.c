@@ -121,7 +121,7 @@ struct ht_item_t *remove_item(struct hash_table_t* table, char *key)
 void symtab_init()
 {
 	// TODO we need to define a gloabal hash table to use for holding all the tag IDs and types.
-
+	global_table = new_hash_table(10);
 
 }
 
@@ -134,13 +134,13 @@ void symtab_print(int numOfTabs)
 {
     int i;
     // Not sure what numOfTabs argument is -- print every item instead.
-    if ( global_table.table == NULL ) {
+    if ( global_table->table == NULL ) {
     	printf("global_table is null\n");
     }
     printf("{\n");
 
-    for (i = 0; i < global_table.size; i++) {
-        struct ht_node_t *node = global_table.table[i];
+    for (i = 0; i < global_table->size; i++) {
+        struct ht_node_t *node = global_table->table[i];
         while (node != NULL) {
             printf("\"%s\": ", node->key);
             // TODO - Update value to be actual value rather than type.
@@ -186,9 +186,9 @@ struct ht_item_t * findElement(char* id, char* scope)
 		}
 		if ( scope == NULL ) {
 			// we will assume that we should look in the current scope
-			scope = current_scope;
+			scope = current_scope->scope;
 		}
-		T = get_hashtable_item(&global_table,scope);
+		T = get_hashtable_item(global_table,scope);
 
 		// check that we got a valid value back
 		if ( T == NULL ) {
@@ -220,20 +220,20 @@ struct ht_item_t * get_or_create_scope(char* scope, char* parent)
 			assert(!"Cannot open or create a NULL scope\n");
 			break;
 		}
-		struct ht_item_t * T = get_hashtable_item(&global_table,scope);
+		struct ht_item_t * T = get_hashtable_item(global_table,scope);
 
 		// check that we got a valid value back
 		if ( T == NULL ) {
 
 			// we do not have a table defined for this scope yet so we want to
 			// create that table now.
-			scope_item = malloc(sizeof(struct ht_scope_item_t));
+			scope_item = (struct ht_scope_item_t *)malloc(sizeof(struct ht_scope_item_t));
 			CHECK_MEM_ERROR(scope_item);
 
 			scope_item->parent = NULL;
 			// find the parent scope if provided
 			if ( parent != NULL ) {
-				p_scope = get_hashtable_item(&global_table,parent);
+				p_scope = get_hashtable_item(global_table,parent);
 				if ( p_scope != NULL && p_scope->value_type == scope_table ) {
 					scope_item->parent = p_scope->value;
 				} // else the default value is already null
@@ -242,14 +242,12 @@ struct ht_item_t * get_or_create_scope(char* scope, char* parent)
 			scope_item->table = new_hash_table(15); // we might want to make this number bigger
 
 			// create the hash table value for this scope
-			r_scope = malloc(sizeof(struct ht_item_t));
+			r_scope = (struct ht_item_t *)malloc(sizeof(struct ht_item_t));
 			CHECK_MEM_ERROR(r_scope);
 
 			r_scope->value = scope_item;
 			r_scope->value_type = scope_table;
-			if ( insert_item(&global_table,scope,r_scope) ) {
-				assert(!"Failed to add new scope to global_table");
-			}
+			insert_item(global_table,scope,r_scope);
 		} else {
 			// we found a valid scope element so we are good
 			r_scope = T;
@@ -286,9 +284,9 @@ int add_element(struct ht_item_t *value, char* id, char* scope)
 		}
 		if ( scope == NULL ) {
 			// we will assume that we should look in the current scope
-			scope = current_scope;
+			scope = current_scope->scope;
 		}
-		struct ht_item_t * T = get_hashtable_item(&global_table,scope);
+		struct ht_item_t * T = get_hashtable_item(global_table,scope);
 
 		// check that we got a valid value back
 		if ( T == NULL ) {
@@ -330,13 +328,24 @@ int add_element(struct ht_item_t *value, char* id, char* scope)
 // are pointing to the correct scopes.
 struct ht_scope_item_t* moveDownToNewScope(char* scope)
 {
+	char* current = NULL;
+	if ( current_scope != NULL ) {
+		current = current_scope->scope;
+	}
 	// The default return value is NULL if this scope has already been
 	// defined.
 	struct ht_scope_item_t* rval = NULL;
-	if ( get_hashtable_item(&global_table,scope) == NULL ) {
-		struct ht_item_t * t = get_or_create_scope(scope,current_scope);
+	if ( get_hashtable_item(global_table,scope) == NULL ) {
+		struct ht_item_t * t = get_or_create_scope(scope,current);
 		if ( t != NULL && t->value_type == scope_table ) {
+			if ( current_scope == NULL ) {
+				current_scope = (struct scope_path * )malloc(sizeof(struct scope_path));
+				current_scope->parent=NULL;
+				current_scope->scope = (char*) malloc((strlen(scope) + 1));
+			}
+			strcpy(current_scope->scope, scope);
 			rval = t->value;
+
 		}
 	}
 	return rval;
@@ -383,15 +392,15 @@ char* checkType(char* id1,char *scope1,char*scope2, char* id2)
 	struct ht_scope_item_t* s2;
 
 	if ( scope1 == NULL ) {
-		scope1 = current_scope;
+		scope1 = current_scope->scope;
 	}
 	if ( scope2 == NULL ) {
-		scope2 = current_scope;
+		scope2 = current_scope->scope;
 	}
 
 	do {
-		t1 = get_hashtable_item(&global_table,scope1);
-		t2 = get_hashtable_item(&global_table,scope2);
+		t1 = get_hashtable_item(global_table,scope1);
+		t2 = get_hashtable_item(global_table,scope2);
 		if ( t1 == NULL || t2 == NULL ) {
 			printf("checkType(): unknown scope used: scope1 = %s, scope2 = %s ",scope1,scope2);
 			break;
@@ -428,4 +437,67 @@ char* checkType(char* id1,char *scope1,char*scope2, char* id2)
 	} while (0);
 	return rval;
 }
+char* checkMethodType(char* id, char* scope, char* method )
+{
+	// default return value is NULL
+	char * rval = NULL;
+	char * type1 = NULL;
+	char * type2 = NULL;
+	struct ht_item_t * t1;
+	struct ht_item_t * t2;
+	struct ht_scope_item_t* s1;
+	struct ht_scope_item_t* s2;
 
+	if ( scope == NULL ) {
+		// assume that the user is using the current scope
+		scope = current_scope->scope;
+	}
+	do {
+		t1 = get_hashtable_item(global_table,scope);
+		t2 = get_hashtable_item(global_table,method);
+		if ( t1 == NULL || t2 == NULL ) {
+			printf("checkMethodType(): unknown scope or method used: scope1 = %s, method = %s ",scope,scope);
+			break;
+		}
+		if ( t1->value_type != scope_table || t2->value_type != scope_table ) {
+			// Structure problem we should not have this happen.
+			assert(!"checkMethodType(): Hash Table is not structured correctly");
+			break;
+		}
+		s1 = t1->value;
+		s2 = t1->value;
+
+		if ( s1 == NULL || s2 == NULL ) {
+			// Structure problem we should not have this happen.
+			assert(!"checkMethodType(): scope table was lost");
+			break;
+		}
+		// search in all the parent scopes as well to find the elements for these ids
+		t1 = findInParentScope(s1,id);
+
+		if ( t1 == NULL ) {
+			// we do not have this identifier yet so we cannot say they are the same
+			break;
+		}
+		type1 = getType(t1);
+		type2 = getType(t2);
+		if ( strcmp(type1,type2) == 0 ) {
+			// These are the same type Yeah!!!
+			rval = type1;
+		}
+
+
+	} while (0);
+	return rval;
+}
+
+void removeCurrentScope()
+{
+	struct scope_path* temp;
+	// find the parent scope of the current scope
+	if ( current_scope->parent != NULL ) {
+		temp = current_scope;
+		current_scope = current_scope->parent;
+		free(temp);
+	}
+}

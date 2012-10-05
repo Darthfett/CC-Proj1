@@ -65,10 +65,17 @@ struct ht_array_item_t {
 	int min; // this is the minimum index for this array
 	int max; // this is the maximum index for this array.
 };
+struct scope_path{
+	char* scope;
+	struct scope_path * parent;
+};
 
-char *current_scope;
-struct hash_table_t global_table;
-
+struct ht_scope_item_t* moveDownToNewScope(char* scope);
+struct scope_path *current_scope;
+struct hash_table_t *global_table;
+void removeCurrentScope();
+char* checkMethodType(char* id, char* scope, char* method );
+char* checkType(char* id1,char *scope1,char*scope2, char* id2);
 void symtab_init();
 void symtab_print(int numOfTabs);
 struct hash_table_t* new_hash_table(int size);

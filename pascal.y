@@ -151,6 +151,9 @@ program_heading : PROGRAM identifier
 	{
 	// TODO make sure that this identifier is checked against list of identifiers
 	// Change our scope to be within this program
+	if ( moveDownToNewScope($2) == NULL ) {
+		yyerror("Program Identifier has already been used");
+	}
 	printf("program_heading : PROGRAM identifier \n");
 	$$ = (struct program_heading_t *) malloc(sizeof(struct program_heading_t));
 	$$->id = $2;
@@ -168,17 +171,17 @@ program_heading : PROGRAM identifier
 
 identifier_list : identifier_list comma identifier
         {
-	printf("identifier_list : identifier_list comma identifier \n%s",yytext);
-	$$ = (struct identifier_list_t*) malloc(sizeof(struct identifier_list_t));
-	$$->next = $1;
-	$$->id = $3;
+		printf("identifier_list : identifier_list comma identifier \n%s",yytext);
+		$$ = (struct identifier_list_t*) malloc(sizeof(struct identifier_list_t));
+		$$->next = $1;
+		$$->id = $3;
         }
  | identifier
         {
-	printf("identifier_list : identifier \n");
-	$$ = (struct identifier_list_t*) malloc(sizeof(struct identifier_list_t));
-	$$->next = NULL;
-	$$->id = $1;
+		printf("identifier_list : identifier \n");
+		$$ = (struct identifier_list_t*) malloc(sizeof(struct identifier_list_t));
+		$$->next = NULL;
+		$$->id = $1;
         }
  ;
 
@@ -862,7 +865,7 @@ primary : variable_access
         $$ = (struct primary_t*) malloc(sizeof(struct primary_t));
         $$->type = PRIMARY_T_FUNCTION_DESIGNATOR;
         $$->data.fd = $1;
-        $$->expr = $1->expr;
+        //$$->expr = $1->expr;
 	}
  | LPAREN expression RPAREN
 	{
